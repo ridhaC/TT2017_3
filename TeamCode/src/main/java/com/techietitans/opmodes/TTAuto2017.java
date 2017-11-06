@@ -11,8 +11,8 @@ import com.techietitans.libraries.AdaFruitCS;
 import com.techietitans.libraries.DataLogger;
 
 
-@Autonomous(name = "Main-Short-NoCenter",group = "TechieTitans")
-@Disabled
+@Autonomous(group = "TechieTitans")
+//@Disabled
 public class TTAuto2017 extends TeleOp2017 {
 
     int currentState = 0;
@@ -29,6 +29,7 @@ public class TTAuto2017 extends TeleOp2017 {
     int rightStartPosition;
     int startDirection = 0;
     Sides turnDirection = Sides.LEFT;
+    Sides UndoturnDirection = Sides.LEFT;
     boolean logEnabled = false;
     long logTime = System.currentTimeMillis();
     boolean colorSensorsDisabled = false;
@@ -78,7 +79,7 @@ public class TTAuto2017 extends TeleOp2017 {
         // Set all drive train motors to run using encoders
         //useEncoders();
         //Turn on LED of bottom color sensor-Used to detect line.
-        Color_jewel.enableLed(false);
+        Color_jewel.enableLed(true);
         isRunning = false;
     }
 
@@ -107,7 +108,7 @@ public class TTAuto2017 extends TeleOp2017 {
     public void start() {
 
 
-        //currentState = 15;
+        currentState = 0;
         //TODO: Change for 2017 data points
         if (logEnabled) {
             //Set a new data logger and header of the file
@@ -157,11 +158,12 @@ public class TTAuto2017 extends TeleOp2017 {
                 rightGlyphHolder.setPosition(GLYPH_RIGHT_SERVO_CLOSE);
                 leftGlyphHolder.setPosition(GLYPH_LEFT_SERVO_CLOSE);
                 runtime.reset();
+                currentState++;
                 break;
             case 2:
                 // Lift the glyph to mid height
-                lift_motor.setPower(0.3);
-                if (runtime.milliseconds()>1000){
+                lift_motor.setPower(-0.3);
+                if (runtime.milliseconds()>2000){
                     lift_motor.setPower(0.0);
                     currentState++;
                     runtime.reset();
@@ -170,8 +172,8 @@ public class TTAuto2017 extends TeleOp2017 {
             case 3:
                 // Lower the Jewel Servo
 
-                jewelPusherArm.setPosition(0.15);
-                if (runtime.milliseconds()>1000){
+                jewelPusherArm.setPosition(16.3/255);
+                if (runtime.milliseconds()>5000){
                     currentState++;
 
                 }
@@ -186,35 +188,35 @@ public class TTAuto2017 extends TeleOp2017 {
                 else{
                     jewelColor=Colors.BLUE;
                 }
-
                 turnDirection = (jewelColor == allianceColor) ? Sides.RIGHT : Sides.LEFT;
+                UndoturnDirection = (turnDirection == Sides.RIGHT) ? Sides.LEFT : Sides.RIGHT;
+                currentState++;
                 break;
             case 5:
                 // Turn to remove the jewel
-                if (gyroPointTurn(.3, turnDirection, 40)) {
+                if (gyroPointTurn(.2, turnDirection, 10)) {
                     currentState++;
-                    left_front_motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-                    right_front_motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
                     runtime.reset();
                 }
                 break;
 
             case 6:
                 // Bring back the jewel servo
-                jewelPusherArm.setPosition(0.0);
-                if (runtime.milliseconds()>1000){
+                jewelPusherArm.setPosition(1.5/255);
+                if (runtime.milliseconds()>2000){
                     currentState++;
-
                 }
                 break;
 
             case 7:
                 // Undo the turn
-
+                if (gyroPointTurn(.2, UndoturnDirection, 12)) {
+                    currentState++;
+                }
                 break;
 
 
-            case 8:
+            case 800:
                 // Come down and move towards glyph drop zone
                 if (driveWithEncoders(.3, .3, 500, 500)) {
                     currentState++;
@@ -269,6 +271,10 @@ public class TTAuto2017 extends TeleOp2017 {
         loopCounter++;
 
         telemetry.addData("state: ", currentState);
+        telemetry.addData("Jewel : ", jewelColor);
+        telemetry.addData("Red : ",Color_jewel.red());
+        telemetry.addData("Blue : ",Color_jewel.blue());
+        telemetry.addData("Turn : ",turnDirection);
 
 
         // Write data to log file..if enabled and log duration has reached
@@ -391,16 +397,16 @@ public class TTAuto2017 extends TeleOp2017 {
         power = power*correction;
 
         if (turnDirection == Sides.LEFT) {
-            left_front_motor.setPower(-power);
-            left_back_motor.setPower(-power);
-            right_front_motor.setPower(power);
-            right_back_motor.setPower(power);
-        }
-        if (turnDirection == Sides.RIGHT) {
             left_front_motor.setPower(power);
             left_back_motor.setPower(power);
             right_front_motor.setPower(-power);
             right_back_motor.setPower(-power);
+        }
+        if (turnDirection == Sides.RIGHT) {
+            left_front_motor.setPower(-power);
+            left_back_motor.setPower(-power);
+            right_front_motor.setPower(power);
+            right_back_motor.setPower(power);
         }
         // Target is reached if error is within threshold.. (2 degrees)
         if (error<=2) {
