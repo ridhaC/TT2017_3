@@ -19,31 +19,22 @@ import com.qualcomm.robotcore.hardware.I2cController;
  */
 public abstract class HardwareClass_V2 extends OpMode {
 
-    protected static DcMotor front_left;
-    protected static DcMotor front_right;
-    protected static DcMotor lift;
-    protected static DcMotor shooter;
-    protected static OpticalDistanceSensor ods_front;
-    protected static ModernRoboticsI2cGyro gyro;
-    public static Servo pusher_left;
-    public static Servo pusher_right;
-    protected static Servo latch;
-    protected static Servo release;
-    protected static TouchSensor touch_left;
-    protected static TouchSensor touch_right;
+    protected static DcMotor left_front_motor = null;
+    protected static DcMotor right_front_motor = null;
+    protected static DcMotor left_back_motor = null;
+    protected static DcMotor right_back_motor = null;
 
-    // Declare Color Sensor objects (and other items required to enable/disable)
-    protected static ModernRoboticsI2cColorSensor  mrcolor_under = null;
-    protected static ModernRoboticsI2cColorSensor  mrcolor_front = null;
+    protected static DcMotor lift_motor = null;
+    protected static DcMotor relic_motor = null;
 
-    protected static I2cAddr underColorAddress  = I2cAddr.create8bit(0x4c);
-    protected static I2cAddr frontColorAddress = I2cAddr.create8bit(0x3c);
+    protected static Servo leftGlyphHolder  = null;
+    protected static Servo rightGlyphHolder  = null;
 
-    protected static I2cController   underColorController;
-    protected static I2cController   frontColorController;
-
-    protected static I2cController.I2cPortReadyCallback underColorCallback;
-    protected static I2cController.I2cPortReadyCallback frontColorCallback;
+    public Servo jewelPusherArm   = null;
+    public Servo relicGrabber_hand   = null;
+    public Servo relicGrabber_base   = null;
+    protected static ModernRoboticsI2cGyro gyro  = null;
+    protected static ModernRoboticsI2cColorSensor Color_jewel  = null;
 
 
 
@@ -51,7 +42,35 @@ public abstract class HardwareClass_V2 extends OpMode {
     @Override
     public void init() {
 
+        left_front_motor = hardwareMap.dcMotor.get("leftFront");
+        right_front_motor = hardwareMap.dcMotor.get("rightFront");
+        left_back_motor = hardwareMap.dcMotor.get("leftBack");
+        right_back_motor = hardwareMap.dcMotor.get("rightBack");
 
+
+        lift_motor = hardwareMap.dcMotor.get("lift");
+        relic_motor = hardwareMap.dcMotor.get("relicGrabber");
+
+        rightGlyphHolder = hardwareMap.servo.get("right_hand");
+        leftGlyphHolder = hardwareMap.servo.get("left_hand");
+       jewelPusherArm = hardwareMap.servo.get("jewel_arm");
+//        relicGrabber_hand = hardwareMap.servo.get("relicGrabber_hs");
+//        relicGrabber_base = hardwareMap.servo.get("relicGrabber_bs");
+
+        left_front_motor.setDirection(DcMotor.Direction.REVERSE);
+        left_back_motor.setDirection(DcMotor.Direction.REVERSE);
+
+
+        try {
+            gyro = (ModernRoboticsI2cGyro) hardwareMap.gyroSensor.get("gyro");
+        } catch (Exception p_exeception) {
+            gyro = null;
+        }
+        try {
+            Color_jewel   = hardwareMap.get(ModernRoboticsI2cColorSensor.class, "Color_jewel");
+        } catch (Exception p_exeception) {
+            Color_jewel = null;
+        }
     }
 
     @Override
