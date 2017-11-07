@@ -162,8 +162,8 @@ public class TTAuto2017 extends TeleOp2017 {
                 break;
             case 2:
                 // Lift the glyph to mid height
-                lift_motor.setPower(-0.3);
-                if (runtime.milliseconds()>2000){
+                lift_motor.setPower(0.3);
+                if (runtime.milliseconds()>500){
                     lift_motor.setPower(0.0);
                     currentState++;
                     runtime.reset();
@@ -173,7 +173,7 @@ public class TTAuto2017 extends TeleOp2017 {
                 // Lower the Jewel Servo
 
                 jewelPusherArm.setPosition(16.3/255);
-                if (runtime.milliseconds()>5000){
+                if (runtime.milliseconds()>3000){
                     currentState++;
 
                 }
@@ -188,7 +188,7 @@ public class TTAuto2017 extends TeleOp2017 {
                 else{
                     jewelColor=Colors.BLUE;
                 }
-                turnDirection = (jewelColor == allianceColor) ? Sides.RIGHT : Sides.LEFT;
+                turnDirection = (jewelColor == allianceColor) ? Sides.LEFT : Sides.RIGHT;
                 UndoturnDirection = (turnDirection == Sides.RIGHT) ? Sides.LEFT : Sides.RIGHT;
                 currentState++;
                 break;
@@ -210,15 +210,16 @@ public class TTAuto2017 extends TeleOp2017 {
 
             case 7:
                 // Undo the turn
-                if (gyroPointTurn(.2, UndoturnDirection, 12)) {
+                if (gyroPointTurn(.2, UndoturnDirection, 10)) {
                     currentState++;
                 }
                 break;
 
 
-            case 800:
+            case 8:
                 // Come down and move towards glyph drop zone
-                if (driveWithEncoders(.3, .3, 500, 500)) {
+                //TODO: Red and Blue alliance will have opposite direction
+                if (driveWithEncoders(-0.2, -0.2, 2500, 2500)) {
                     currentState++;
                 }
 
@@ -227,32 +228,53 @@ public class TTAuto2017 extends TeleOp2017 {
 
             case 9:
                 // Turn towards glyph drop zone
-
+                if (gyroPointTurn(.2, Sides.LEFT, 90)) {
+                    currentState++;
+                    runtime.reset();
+                }
                 break;
 
 
 
             case 10:
                 // Move front to the drop zone
+                if ((driveWithEncoders(-0.2, -0.2, 500, 500))|| (runtime.milliseconds()>5000)) {
+                    currentState++;
+                }
 
                 break;
 
 
 
             case 11:
-                // Lower glyph
-
+                // Lower glyph -- Not sure if we need it
+                currentState++;
                 break;
 
 
             case 12:
                 // Release glyph
-
+                rightGlyphHolder.setPosition(GLYPH_RIGHT_SERVO_OPEN);
+                leftGlyphHolder.setPosition(GLYPH_LEFT_SERVO_OPEN);
+                currentState++;
                 break;
 
 
+            case 13:
+                // Come back a bit
+                if (driveWithEncoders(0.2, 0.2, 500, 500)) {
+                    currentState++;
+                }
 
+                break;
 
+            case 14:
+                // Come back a bit
+                if (driveWithEncoders(-0.2, -0.2, 600, 600)) {
+                    currentState++;
+                }
+
+                break;
             case 99:
                 // Recovery State. Any known failures will lead the state machine to this state.
                 // Display in telemetry and log to the file
