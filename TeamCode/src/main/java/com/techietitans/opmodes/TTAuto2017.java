@@ -81,7 +81,7 @@ public class TTAuto2017 extends TeleOp2017 {
         gyro.calibrate();
         // Set all drive train motors to run using encoders
         //useEncoders();
-        //Turn on LED of bottom color sensor-Used to detect line.
+        //Turn on LED of the color sensor-Used to detect jewel.
         Color_jewel.enableLed(true);
         isRunning = false;
     }
@@ -205,7 +205,9 @@ public class TTAuto2017 extends TeleOp2017 {
 
             case 6:
                 // Bring back the jewel servo
-                jewelPusherArm.setPosition(1.5/255);
+                jewelPusherArm.setPosition(0);
+                //Turn off LED of the color sensor Used to detect jewel.
+                Color_jewel.enableLed(false);
                 if (runtime.milliseconds()>2000){
                     currentState++;
                 }
@@ -224,7 +226,7 @@ public class TTAuto2017 extends TeleOp2017 {
                 //TODO: Adjust alliance specific parameters
 
                 allianceSpecific = (allianceColor== Colors.RED) ? 0.2 : -0.2;
-                allianceSpecificDistance = (allianceColor== Colors.RED) ? 2300 : 2500;
+                allianceSpecificDistance = (allianceColor== Colors.RED) ? 2150 : 2350;
 
                 if (driveWithEncoders(allianceSpecific,allianceSpecific, allianceSpecificDistance, allianceSpecificDistance)) {
                     currentState++;
@@ -241,12 +243,21 @@ public class TTAuto2017 extends TeleOp2017 {
                 }
                 break;
 
+            /*case 10:
+                // TODO: Move back -- Tweek for wheel lock, Adjust the case numbers AND Encoder count to
+                //800 in the next step
+                if ((driveWithEncoders(-0.2, -0.2, 300, 300))) {
+                    currentState++;
+                    runtime.reset();
+                }
 
+                break; */
 
             case 10:
                 // Move front to the drop zone
-                if ((driveWithEncoders(-0.2, -0.2, 500, 500))|| (runtime.milliseconds()>5000)) {
+                if ((driveWithEncoders(-0.3, -0.3, 500, 500))|| (runtime.milliseconds()>5000)) {
                     currentState++;
+                    runtime.reset();
                 }
 
                 break;
@@ -255,7 +266,13 @@ public class TTAuto2017 extends TeleOp2017 {
 
             case 11:
                 // Lower glyph -- Not sure if we need it
-                currentState++;
+                // Lift the glyph to mid height
+                lift_motor.setPower(-0.3);
+                if (runtime.milliseconds()>350){
+                    lift_motor.setPower(0.0);
+                    currentState++;
+                    runtime.reset();
+                }
                 break;
 
 
@@ -276,8 +293,8 @@ public class TTAuto2017 extends TeleOp2017 {
                 break;
 
             case 14:
-                // Come back a bit
-                if (driveWithEncoders(-0.2, -0.2, 600, 600)) {
+                // Center Glyph
+                if (driveWithEncoders(-0.15, -0.15, 750, 750)) {
                     currentState++;
                 }
 

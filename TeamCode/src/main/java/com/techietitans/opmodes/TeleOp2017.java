@@ -92,7 +92,7 @@ public class TeleOp2017 extends HardwareClass_V2{
          * The init() method of the hardware class does all the work here
          */
         super.init();
-        jewelPusherArm.setPosition(1.5/255);
+        jewelPusherArm.setPosition(0);
         rightGlyphHolder.setPosition(GLYPH_RIGHT_SERVO_CLOSE_HALF);
         leftGlyphHolder.setPosition(GLYPH_LEFT_SERVO_CLOSE_HALF);
         // Send telemetry message to signify robot waiting;

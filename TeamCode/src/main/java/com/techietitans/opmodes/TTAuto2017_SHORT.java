@@ -203,7 +203,9 @@ public class TTAuto2017_SHORT extends TeleOp2017 {
 
             case 6:
                 // Bring back the jewel servo
-                jewelPusherArm.setPosition(1.5/255);
+                jewelPusherArm.setPosition(0);
+                //Turn off LED of the color sensor Used to detect jewel.
+                Color_jewel.enableLed(false);
                 if (runtime.milliseconds()>2000){
                     currentState++;
                 }
@@ -217,7 +219,7 @@ public class TTAuto2017_SHORT extends TeleOp2017 {
 
                 break;
 
-           
+
             case 99:
                 // Recovery State. Any known failures will lead the state machine to this state.
                 // Display in telemetry and log to the file
