@@ -93,8 +93,8 @@ public class TeleOp2017 extends HardwareClass_V2{
          */
         super.init();
         jewelPusherArm.setPosition(0);
-        rightGlyphHolder.setPosition(GLYPH_RIGHT_SERVO_CLOSE_HALF);
-        leftGlyphHolder.setPosition(GLYPH_LEFT_SERVO_CLOSE_HALF);
+        rightGlyphHolder.setPosition(GLYPH_RIGHT_SERVO_OPEN);
+        leftGlyphHolder.setPosition(GLYPH_LEFT_SERVO_OPEN);
         // Send telemetry message to signify robot waiting;
         telemetry.addData("Say", "Bueno Mecanum");    //
 
@@ -133,10 +133,10 @@ public class TeleOp2017 extends HardwareClass_V2{
         right_back_motor.setPower(gamepad1.left_stick_y);
         */
 
-        float LFspeed = 0;
-        float LBspeed = 0;
-        float RFspeed = 0;
-        float RBspeed = 0;
+        double LFspeed = 0;
+        double LBspeed = 0;
+        double RFspeed = 0;
+        double RBspeed = 0;
 
         int threshold = 20;
 
@@ -303,6 +303,13 @@ public class TeleOp2017 extends HardwareClass_V2{
         LBspeed = Range.clip(LBspeed, -1, 1);
         RFspeed = Range.clip(RFspeed, -1, 1);
         RBspeed = Range.clip(RBspeed, -1, 1);
+
+        if (gamepad1.left_trigger>0.5){
+            LFspeed = LFspeed/6;
+            LBspeed = LBspeed/6;
+            RFspeed = RFspeed/6;
+            RBspeed = RBspeed/6 ;
+        }
 
         right_front_motor.setPower(RFspeed);
         left_front_motor.setPower(LFspeed);

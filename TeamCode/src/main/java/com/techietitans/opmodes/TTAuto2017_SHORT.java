@@ -173,7 +173,7 @@ public class TTAuto2017_SHORT extends TeleOp2017 {
             case 3:
                 // Lower the Jewel Servo
 
-                jewelPusherArm.setPosition(16.3/255);
+                jewelPusherArm.setPosition(17.5/255);
                 if (runtime.milliseconds()>3000){
                     currentState++;
 

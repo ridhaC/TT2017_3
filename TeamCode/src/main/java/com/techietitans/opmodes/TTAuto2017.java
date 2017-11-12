@@ -175,7 +175,7 @@ public class TTAuto2017 extends TeleOp2017 {
             case 3:
                 // Lower the Jewel Servo
 
-                jewelPusherArm.setPosition(16.3/255);
+                jewelPusherArm.setPosition(17.5/255);
                 if (runtime.milliseconds()>3000){
                     currentState++;
 
@@ -225,8 +225,8 @@ public class TTAuto2017 extends TeleOp2017 {
                 // Come down and move towards glyph drop zone
                 //TODO: Adjust alliance specific parameters
 
-                allianceSpecific = (allianceColor== Colors.RED) ? 0.2 : -0.2;
-                allianceSpecificDistance = (allianceColor== Colors.RED) ? 2150 : 2350;
+                allianceSpecific = (allianceColor== Colors.RED) ? 0.15 : -0.15;
+                allianceSpecificDistance = (allianceColor== Colors.RED) ? 2050 : 2300;
 
                 if (driveWithEncoders(allianceSpecific,allianceSpecific, allianceSpecificDistance, allianceSpecificDistance)) {
                     currentState++;
@@ -268,7 +268,7 @@ public class TTAuto2017 extends TeleOp2017 {
                 // Lower glyph -- Not sure if we need it
                 // Lift the glyph to mid height
                 lift_motor.setPower(-0.3);
-                if (runtime.milliseconds()>350){
+                if (runtime.milliseconds()>500){
                     lift_motor.setPower(0.0);
                     currentState++;
                     runtime.reset();
@@ -294,7 +294,13 @@ public class TTAuto2017 extends TeleOp2017 {
 
             case 14:
                 // Center Glyph
-                if (driveWithEncoders(-0.15, -0.15, 750, 750)) {
+                if (driveWithEncoders(-0.12, -0.12, 1150, 800)) {
+                    currentState++;
+                }
+
+            case 15:
+                // Come back..away
+                if (driveWithEncoders(0.2, 0.2, 70, 70)) {
                     currentState++;
                 }
 
