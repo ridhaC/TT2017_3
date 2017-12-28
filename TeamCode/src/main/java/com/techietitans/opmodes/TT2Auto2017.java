@@ -1,22 +1,24 @@
 
 package com.techietitans.opmodes;
- 
+
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
-import com.techietitans.libraries.AdaFruitCS;
 import com.techietitans.libraries.DataLogger;
+import com.techietitans.libraries.TTCrypto;
 
+import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
+
+//---VueForia-Specific-Imports---
 
 @Autonomous(group = "TechieTitans")
-@Disabled
-public class TTAuto2017 extends TeleOp2017 {
+//@Disabled
+public class TT2Auto2017 extends TeleOp2017 {
 
     int currentState = 0;
-    int previousState = 0;
+    int previousState = 7;
     boolean isRunning = false;
     boolean isResetRunning = false;
     DataLogger dl;
@@ -39,6 +41,14 @@ public class TTAuto2017 extends TeleOp2017 {
     double allianceSpecific;
     int allianceSpecificDistance;
     boolean shortVersion = false;
+    boolean jewelEnabled = true;
+    int moveDistance = 0;
+
+    //---VueForia-Specific-Variables---
+    //TODO:Move these to another class like hardware class so that we dont have to declare in all code.
+    private TTCrypto vu;
+    private RelicRecoveryVuMark vm;
+    int collumn = 0; //0 is left 1 is middle 2 is right default to 0 so that it defaults to left row the row with least margin for error
 
 
 
@@ -57,7 +67,7 @@ public class TTAuto2017 extends TeleOp2017 {
      * Construct the class.
      * The system calls this member when the class is instantiated.
      */
-    public TTAuto2017() {
+    public TT2Auto2017() {
         // Initialize base classes.
         // All via self-construction.
 
@@ -83,12 +93,24 @@ public class TTAuto2017 extends TeleOp2017 {
         //useEncoders();
         //Turn on LED of the color sensor-Used to detect jewel.
         Color_jewel.enableLed(true);
+        //Estabilish vm as "VueForia eyes"
+        vu = new TTCrypto(hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName()));
+        vu.activateView();//active vue
         isRunning = false;
     }
 
     //*****************************************************************************
     @Override
     public void init_loop() {
+        vm = vu.getViewResult();
+        if (vm == RelicRecoveryVuMark.RIGHT)
+            collumn = 2;
+        else if (vm == RelicRecoveryVuMark.CENTER)
+            collumn = 1;
+        else
+            collumn = 0;
+
+        telemetry.addData("Placing in ",vm);
         //Get Alliance selection
         if (gamepad1.b) {
             // RED Alliance
@@ -97,14 +119,29 @@ public class TTAuto2017 extends TeleOp2017 {
             //BLUE Alliance
             allianceColor = Colors.BLUE;
         }
+        if (gamepad1.left_bumper)   {
+
+            jewelEnabled = false;
+
+        }
+
+        if (gamepad1.right_bumper)  {
+
+            jewelEnabled = true;
+
+        }
+
         //allianceColor = Colors.RED;
         telemetry.addData("**** ALLIANCE ****  ", allianceColor);
+
+        telemetry.addData("****JEWEL****  ", jewelEnabled);
 
         if (gamepad1.y) {
             logEnabled = true;
         }
         //logEnabled = true;
         telemetry.addData("**** Log Enabled ****", logEnabled);
+        vu.close();
     }
 
     //*****************************************************************************
@@ -146,7 +183,7 @@ public class TTAuto2017 extends TeleOp2017 {
     @Override
     public void loop() {
 
-      //*********Start State Machine
+        //*********Start State Machine
         switch (currentState) {
             //Tasks are broken down to finite STATES. We will increment to to next state after successful
             // completion of each state.
@@ -168,28 +205,36 @@ public class TTAuto2017 extends TeleOp2017 {
                 lift_motor.setPower(0.3);
                 if (runtime.milliseconds()>500){
                     lift_motor.setPower(0.0);
-                    currentState++;
                     runtime.reset();
+                    if (jewelEnabled == true)
+                        currentState++;
+                    else //TODO:Adjust when needed, if a step is added in jewel pushing.
+                        currentState = 8;
                 }
+
+
                 break;
             case 3:
                 // Lower the Jewel Servo
 
-                jewelPusherArm.setPosition(17.5/255);
-                if (runtime.milliseconds()>3000){
+
+
+                jewelPusherArm.setPosition(17.5 / 255);
+                if (runtime.milliseconds() > 3000) {
                     currentState++;
 
                 }
+
                 break;
             case 4:
                 // Decide turn direction
                 //if color sensor and alliance color is same the turn right
                 // (when color sensor is pointed at right)
                 if (Color_jewel.red()>Color_jewel.blue()){
-                    jewelColor=Colors.RED;
+                    jewelColor= Colors.RED;
                 }
                 else{
-                    jewelColor=Colors.BLUE;
+                    jewelColor= Colors.BLUE;
                 }
                 turnDirection = (jewelColor == allianceColor) ? Sides.LEFT : Sides.RIGHT;
                 UndoturnDirection = (turnDirection == Sides.RIGHT) ? Sides.LEFT : Sides.RIGHT;
@@ -221,52 +266,84 @@ public class TTAuto2017 extends TeleOp2017 {
 
                 break;
 
-                //TODO: Starting point for 2nd option
-
             case 8:
                 // Come down and move towards glyph drop zone
                 //TODO: Adjust alliance specific parameters
 
-                allianceSpecific = (allianceColor== Colors.RED) ? 0.15 : -0.15;
-                allianceSpecificDistance = (allianceColor== Colors.RED) ? 2050 : 2300;
+                allianceSpecific = (allianceColor == Colors.RED) ? 0.15 : -0.15;
+                allianceSpecificDistance = (allianceColor == Colors.RED) ? 2050 : 2050;
 
-                if (driveWithEncoders(allianceSpecific,allianceSpecific, allianceSpecificDistance, allianceSpecificDistance)) {
+                if (driveWithEncoders(allianceSpecific, allianceSpecific, allianceSpecificDistance, allianceSpecificDistance)) {
                     currentState++;
                 }
-
                 break;
 
 
             case 9:
-                // Turn towards glyph drop zone
-                if (gyroPointTurn(.2, Sides.LEFT, 90)) {
-                    currentState++;
-                    runtime.reset();
+                if (collumn == 2)   {
+
+                    if (gyroPointTurn(.2, Sides.RIGHT, 60)) {
+                        runtime.reset();
+                        currentState++;
+                    }
+
+                    moveDistance = 750;
+
+
                 }
+
+                else if (collumn == 1)  {
+
+                    if (gyroPointTurn(.2, Sides.RIGHT, 37)) {
+                        runtime.reset();
+                        currentState++;
+                    }
+
+                    moveDistance = 650;
+
+                }
+                // Column 0 - it will come here from DEFAULT case
+                else {
+
+                    if (gyroPointTurn(.2, Sides.RIGHT, 17)) {
+                        runtime.reset();
+                        currentState++;
+                    }
+
+                    moveDistance = 450;
+
+                }
+
                 break;
-
-            /*case 10:
-                // TODO: Move back -- Tweek for wheel lock, Adjust the case numbers AND Encoder count to
-                //800 in the next step
-                if ((driveWithEncoders(-0.2, -0.2, 300, 300))) {
-                    currentState++;
-                    runtime.reset();
-                }
-
-                break; */
 
             case 10:
                 // Move front to the drop zone
-                if ((driveWithEncoders(-0.3, -0.3, 500, 500))|| (runtime.milliseconds()>5000)) {
-                    currentState++;
+                if ((driveWithEncoders(-0.3, -0.3, moveDistance, moveDistance))|| (runtime.milliseconds()>5000)) {
                     runtime.reset();
+                    if (collumn>1)
+                    currentState++;
+                    else currentState = 13;
                 }
 
                 break;
-
-
-
+            //** Only for Column 3 - Start
             case 11:
+                // Undo angle
+                if (gyroPointTurn(.2, Sides.LEFT, 20)) {
+                    currentState++;
+                }
+                break;
+
+            case 12:
+                // Move front to the drop zone
+                if ((driveWithEncoders(-0.3, -0.3, 150, 150))|| (runtime.milliseconds()>5000)) {
+                    runtime.reset();
+                    currentState++;
+                }
+
+                break;
+            //** Only for Column 3 - End
+            case 13:
                 // Lower glyph -- Not sure if we need it
                 // Lift the glyph to mid height
                 lift_motor.setPower(-0.3);
@@ -274,39 +351,45 @@ public class TTAuto2017 extends TeleOp2017 {
                     lift_motor.setPower(0.0);
                     currentState++;
                     runtime.reset();
-                }
+                }if ((driveWithEncoders(-0.3, -0.3, 150, 150))|| (runtime.milliseconds()>5000)) {
+                runtime.reset();
+                currentState++;
+            }
+
                 break;
 
 
-            case 12:
+            case 14:
                 // Release glyph
                 rightGlyphHolder.setPosition(GLYPH_RIGHT_SERVO_OPEN);
                 leftGlyphHolder.setPosition(GLYPH_LEFT_SERVO_OPEN);
-                currentState++;
+                currentState ++;
                 break;
 
-
-            case 13:
-                // Come back a bit
-                if (driveWithEncoders(0.2, 0.2, 500, 500)) {
-                    currentState++;
-                }
-
-                break;
-
-            case 14:
-                // Center Glyph
-                if (driveWithEncoders(-0.12, -0.12, 1150, 800)) {
-                    currentState++;
-                }
 
             case 15:
+                // Secure glyph
+                if (driveWithEncoders(-0.1, -0.2, 100, 150)) {
+                    currentState++;
+                }
+
+                break;
+
+            case 16:
+                // Come back
+                if (driveWithEncoders(0.3, 0.3, 300, 300)) {
+                    currentState++;
+                }
+
+                break;
+
+          /*  case 17:
                 // Come back..away
                 if (driveWithEncoders(0.2, 0.2, 70, 70)) {
                     currentState++;
                 }
 
-                break;
+                break; */
             case 99:
                 // Recovery State. Any known failures will lead the state machine to this state.
                 // Display in telemetry and log to the file
@@ -547,5 +630,4 @@ public class TTAuto2017 extends TeleOp2017 {
 
 
 }
-
 

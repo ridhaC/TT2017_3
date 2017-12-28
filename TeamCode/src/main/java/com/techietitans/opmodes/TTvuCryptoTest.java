@@ -32,8 +32,15 @@ public class TTvuCryptoTest extends OpMode {
 
     @Override
     public void loop() {
-            vm= vu.getViewResult();
+            vm=vu.getViewResult();
+
             telemetry.addData(">> ", vm);
+
+            if(vm==RelicRecoveryVuMark.LEFT)    {
+
+                telemetry.addLine("this is left");
+
+            }
 
     }
 

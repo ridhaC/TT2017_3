@@ -3,6 +3,7 @@ package com.techietitans.opmodes;
  
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
@@ -10,7 +11,8 @@ import com.techietitans.libraries.DataLogger;
 
 
 @Autonomous(group = "TechieTitans")
-//@Disabled
+
+@Disabled
 public class TTAuto2017_SHORT extends TeleOp2017 {
 
     int currentState = 0;
