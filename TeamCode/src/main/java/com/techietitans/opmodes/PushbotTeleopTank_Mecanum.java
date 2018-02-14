@@ -1,4 +1,3 @@
-
 /*
 Copyright (c) 2016 Robert Atkinson
 
@@ -31,7 +30,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-package com.techietitans.opmodes;
+package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
@@ -42,7 +41,6 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.robot.Robot;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
-import com.techietitans.libraries.HardwareClass_V2;
 
 import java.lang.Math;
 
@@ -61,28 +59,73 @@ import static java.lang.Math.abs;
  *
  * Use Android Studios to Copy this Class, and Paste it into your team's code folder with a new name.
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
+ *
+ * =================================================================================
+ * JOYSTICK ASSIGNMENTS
+ * =================================================================================
+ * gamepad1.a : regular speed
+ * gamepad1.b : low speed (one-fifth power)
+
+ * gamepad1.left_stick_y: forward-backward move
+ * gamepad1.left_stick_x: sideways move
+
+
+ * gamepad2.left_stick_y: Lift motor
+ * gamepad2.right_stick_y: Relic motor
+
+ * gamepad2.a : glyph holder mechanism standard position
+ * gamepad2.b : glyph holder mechanism 180 degree rotated
+
+ * gamepad2.right_trigger: GLYPH BOTTOM SERVOs OPEN
+ * gamepad2.left_trigger: GLYPH BOTTOM SERVOs CLOSE
+
+ * gamepad2.left_bumper: GLYPH TOP SERVOs CLOSE
+ * gamepad2.right_bumper: GLYPH TOP SERVOs OPEN
+ * ================================================================================
  */
 
-@TeleOp(group="TeleOp")
-@Disabled
-public class TeleOp2017 extends HardwareClass_V2{
+@TeleOp(name="Faraaz Mecanum opmode", group="Faraaz")
+//@Disabled
+public class PushbotTeleopTank_Mecanum extends OpMode{
 
     /* Declare OpMode members. */
     // HardwarePushbot robot       = new HardwarePushbot(); // use the class created to define a Pushbot's hardware
-    // could also use HardwarePushbotMatrix class.
+                                                         // could also use HardwarePushbotMatrix class.
     // double          clawOffset  = 0.0 ;                  // Servo mid position
     // final double    CLAW_SPEED  = 0.02 ;                 // sets rate to move servo
 
     private ElapsedTime runtime = new ElapsedTime();
+    private DcMotor left_front_motor;
+    private DcMotor right_front_motor;
+    private DcMotor left_back_motor;
+    private DcMotor right_back_motor;
 
+    private DcMotor lift_motor;
+    private DcMotor relic_motor;
 
+    public Servo topLeftGlyphHolder    = null;
+    public Servo topRightGlyphHolder   = null;
+    public Servo bottomLeftGlyphHolder    = null;
+    public Servo bottomRightGlyphHolder   = null;
+    public Servo glyphHolderRotator    = null;
 
-    public static final double GLYPH_RIGHT_SERVO_OPEN       =  0.86 ;
-    public static final double GLYPH_RIGHT_SERVO_CLOSE      =  0.647 ;
-    public static final double GLYPH_RIGHT_SERVO_CLOSE_HALF      = 0.70  ;
-    public static final double GLYPH_LEFT_SERVO_OPEN       =  0.313 ;   // opposite values than Right Servo
-    public static final double GLYPH_LEFT_SERVO_CLOSE      =  0.549 ;
-    public static final double GLYPH_LEFT_SERVO_CLOSE_HALF     =  0.431 ;
+    public Servo jewelPusherArm   = null;
+    public Servo relicGrabber_hand   = null;
+    public Servo relicGrabber_base   = null;
+
+    public static final double GLYPH_TOP_RIGHT_SERVO_OPEN       =  0.25 ;  // was 0.20
+    public static final double GLYPH_TOP_RIGHT_SERVO_CLOSE      =  0.60 ;  // was 0.55
+    public static final double GLYPH_TOP_LEFT_SERVO_OPEN       =  0.70 ;   // was 0.59 // opposite values than Right Servo
+    public static final double GLYPH_TOP_LEFT_SERVO_CLOSE      =  0.375 ;  // was 0.275
+    public static final double GLYPH_BOTTOM_RIGHT_SERVO_OPEN       =  0.20 ;
+    public static final double GLYPH_BOTTOM_RIGHT_SERVO_CLOSE      =  0.55 ;
+    public static final double GLYPH_BOTTOM_LEFT_SERVO_OPEN       =  0.55 ; // 0.59   // opposite values than Right Servo
+    public static final double GLYPH_BOTTOM_LEFT_SERVO_CLOSE      =  0.20 ; // 0.275
+    public static final double GLYPH_ROTATOR_POSITION_A = 12.5/256.0;
+    public static final double GLYPH_ROTATOR_POSITION_B = 33/256.0;
+
+    private boolean lowSpeed = false;
+    private boolean positionA = true;
 
     /*
      * Code to run ONCE when the driver hits INIT
@@ -92,12 +135,39 @@ public class TeleOp2017 extends HardwareClass_V2{
         /* Initialize the hardware variables.
          * The init() method of the hardware class does all the work here
          */
-        super.init();
-        jewel_pusher_arm.setPosition(0);
-        bottom_right_hand.setPosition(GLYPH_RIGHT_SERVO_OPEN);
-        bottom_left_hand.setPosition(GLYPH_LEFT_SERVO_OPEN);
+        //robot.init(hardwareMap);
+        left_front_motor = hardwareMap.dcMotor.get("leftFront");
+        right_front_motor = hardwareMap.dcMotor.get("rightFront");
+        left_back_motor = hardwareMap.dcMotor.get("leftBack");
+        right_back_motor = hardwareMap.dcMotor.get("rightBack");
+
+        lift_motor = hardwareMap.dcMotor.get("lift");
+        relic_motor = hardwareMap.dcMotor.get("relicGrabber");
+
+        topRightGlyphHolder = hardwareMap.servo.get("top_right_hand");
+        topLeftGlyphHolder = hardwareMap.servo.get("top_left_hand");
+        bottomRightGlyphHolder = hardwareMap.servo.get("bottom_right_hand");
+        bottomLeftGlyphHolder = hardwareMap.servo.get("bottom_left_hand");
+        glyphHolderRotator = hardwareMap.servo.get("glyph_rotator");
+
+//        jewelPusherArm = hardwareMap.servo.get("jewel_arm");
+//        relicGrabber_hand = hardwareMap.servo.get("relicGrabber_hs");
+//        relicGrabber_base = hardwareMap.servo.get("relicGrabber_bs");
+
+        left_front_motor.setDirection(DcMotor.Direction.REVERSE);
+        left_back_motor.setDirection(DcMotor.Direction.REVERSE);
+
         // Send telemetry message to signify robot waiting;
-        telemetry.addData("Say", "Bueno Mecanum");    //
+        telemetry.addData("Say", "Program initialized");    //
+
+        // init the rotating glyph holder
+        glyphHolderRotator.setPosition(GLYPH_ROTATOR_POSITION_A);
+        positionA = true;
+
+        topRightGlyphHolder.setPosition(GLYPH_TOP_RIGHT_SERVO_OPEN);
+        topLeftGlyphHolder.setPosition(GLYPH_TOP_LEFT_SERVO_OPEN);
+        bottomRightGlyphHolder.setPosition(GLYPH_BOTTOM_RIGHT_SERVO_OPEN);
+        bottomLeftGlyphHolder.setPosition(GLYPH_BOTTOM_LEFT_SERVO_OPEN);
 
     }
 
@@ -127,47 +197,38 @@ public class TeleOp2017 extends HardwareClass_V2{
         telemetry.addData("Status", "Running: " + runtime.toString());
         // Run wheels in tank mode (note: The joystick goes negative when pushed forwards, so negate it)
 
-       /* right_front_motor.setPower(gamepad1.right_stick_y);
-        left_front_motor.setPower(gamepad1.right_stick_y);
-
-        left_back_motor.setPower(gamepad1.left_stick_y);
-        right_back_motor.setPower(gamepad1.left_stick_y);
-        */
-
-        double LFspeed = 0;
-        double LBspeed = 0;
-        double RFspeed = 0;
-        double RBspeed = 0;
+        float LFspeed = 0;
+        float LBspeed = 0;
+        float RFspeed = 0;
+        float RBspeed = 0;
 
         int threshold = 20;
 
         telemetry.addData("Status", "Gamepad L: " + gamepad1.left_stick_x + " " + gamepad1.left_stick_y + " R: " + gamepad1.right_stick_x + " " + gamepad1.right_stick_y);
 
-        /*
-        if (Math.abs(gamepad1.left_stick_x)*100 >= threshold || Math.abs(gamepad1.left_stick_y)*100 >= threshold) {
-            LFspeed = -gamepad1.left_stick_y - gamepad1.left_stick_x;  // y up is negative in joystick
-            LBspeed = -gamepad1.left_stick_y + gamepad1.left_stick_x;
-            RFspeed = -gamepad1.left_stick_y + gamepad1.left_stick_x;
-            RBspeed = -gamepad1.left_stick_y - gamepad1.left_stick_x;
-        }*/
+        if (gamepad1.b)
+            lowSpeed = true;
 
-        // check for forward move
+        if (gamepad1.a)
+            lowSpeed = false;
+
+        // check for forward-backward move - gamepad1.left_stick_y
         if (abs(gamepad1.left_stick_y)*100 >= threshold) {
-            LFspeed = gamepad1.left_stick_y ;  // ignore x component
-            LBspeed = gamepad1.left_stick_y ;
-            RFspeed = gamepad1.left_stick_y ;
-            RBspeed = gamepad1.left_stick_y ;
+            LFspeed = -gamepad1.left_stick_y ;  // ignore x component
+            LBspeed = -gamepad1.left_stick_y ;
+            RFspeed = -gamepad1.left_stick_y ;
+            RBspeed = -gamepad1.left_stick_y ;
 
-            telemetry.addData("Status", "***** forward *****");
+            telemetry.addData("Status", "***** forward/backward *****");
         }
 
 
-        // check for sideways move. Will take precedence over vertical move
+        // check for sideways move - gamepad1.left_stick_x. Will take precedence over vertical move
         if (abs(gamepad1.left_stick_x)*100 >= threshold) {
-            LFspeed = -gamepad1.left_stick_x;  // ignore y component  // flipping from original
-            LBspeed = gamepad1.left_stick_x;
-            RFspeed = gamepad1.left_stick_x;
-            RBspeed = -gamepad1.left_stick_x;
+            LFspeed = gamepad1.left_stick_x;  // ignore y component  // flipping from original
+            LBspeed = -gamepad1.left_stick_x;
+            RFspeed = -gamepad1.left_stick_x;
+            RBspeed = gamepad1.left_stick_x;
 
             telemetry.addData("Status", "***** sideways *****");
         }
@@ -177,7 +238,7 @@ public class TeleOp2017 extends HardwareClass_V2{
 
         // ========================================================
         // Lift motor - GAMEPAD2 LEFT STICK Y
-        // problem: motor was connected with wrong port (M1 vs M2) *****
+        // check if it's going opposite direction (up vs down)
 
         lift_motor.setPower(0);
         if (abs(gamepad2.left_stick_y)*100 >= threshold) {  // no-op
@@ -186,55 +247,93 @@ public class TeleOp2017 extends HardwareClass_V2{
             double motor_power;
 
             if (gamepad2.left_stick_y > 0)
-                motor_power = -0.5;
+                motor_power = 0.5;         // -ve going opposite?
             else
-                motor_power = 0.5;
+                motor_power = -0.5;
 
             telemetry.addData("Status", "***** Lift motor set power *****");
             lift_motor.setPower(motor_power);
         }
 
         // ========================================================
-        // GLYPH SERVO - GAMEPAD2 LEFT STICK Y
-        // right servo works with these values. Left servo needs to be reversed
+        // Relic motor - GAMEPAD2 RIGHT STICK Y
+        // check if it's going opposite direction (up vs down)
 
-        if (gamepad2.left_bumper || gamepad2.right_bumper) {
-            // if (abs(gamepad2.left_stick_y)*100 >= threshold) {
+        relic_motor.setPower(0);
+        if (abs(gamepad2.right_stick_y)*100 >= threshold) {  // no-op
 
-            telemetry.addData("Status", "Glyph Servo ");
+            telemetry.addData("Status", "Relic motor ");
+            double motor_power;
 
-            if (gamepad2.left_bumper) { //left_stick_y * 100 >= threshold)
-                bottom_right_hand.setPosition(GLYPH_RIGHT_SERVO_CLOSE);
-                bottom_left_hand.setPosition(GLYPH_LEFT_SERVO_CLOSE);
-            }
-            else { //right_bumper
-                bottom_right_hand.setPosition(GLYPH_RIGHT_SERVO_OPEN);
-                bottom_left_hand.setPosition(GLYPH_LEFT_SERVO_OPEN);
-            }
+            if (gamepad2.right_stick_y > 0)
+                motor_power = 1.0;         // -ve going opposite?
+            else
+                motor_power = -0.5;
 
-            telemetry.addData("Status", "***** GLYPH CONTROL *****");
+            telemetry.addData("Status", "***** Relic motor set power *****");
+            relic_motor.setPower(motor_power);
         }
 
 
 
+        // ========================================================
+        // GLYPH SERVOs - using GAMEPAD2
+        // right servo works with these values. Left servo needs to be reversed
 
-            if (gamepad2.left_trigger>.7) { //left_stick_y * 100 >= threshold)
-                bottom_right_hand.setPosition(GLYPH_RIGHT_SERVO_CLOSE_HALF);
-                bottom_left_hand.setPosition(GLYPH_LEFT_SERVO_CLOSE_HALF);
+        // Rotate glyph backbone servo - using A and B button in GAMEPAD2
+        if (gamepad2.a) { // if (gamepad2.a && !positionA) {
+            glyphHolderRotator.setPosition(GLYPH_ROTATOR_POSITION_A);
+            positionA = !positionA;
+            telemetry.addData("Status", "***** GLYPH ROTATOR - POSITION A *****");
+        }
+        else if (gamepad2.b) { //if (gamepad2.b && positionA) {
+            glyphHolderRotator.setPosition(GLYPH_ROTATOR_POSITION_B);
+            positionA = !positionA;
+            telemetry.addData("Status", "***** GLYPH ROTATOR - POSITION B *****");
+        }
+
+        // using JOYSTICK BUMPERS for top glyph
+        if (gamepad2.left_bumper || gamepad2.right_bumper) {
+
+            telemetry.addData("Status", "TOP Glyph Servos ");
+
+            if (gamepad2.left_bumper) { //left_stick_y * 100 >= threshold)
+                topRightGlyphHolder.setPosition(GLYPH_TOP_RIGHT_SERVO_CLOSE);
+                topLeftGlyphHolder.setPosition(GLYPH_TOP_LEFT_SERVO_CLOSE);
+            }
+            else { //right_bumper
+                topRightGlyphHolder.setPosition(GLYPH_TOP_RIGHT_SERVO_OPEN);
+                topLeftGlyphHolder.setPosition(GLYPH_TOP_LEFT_SERVO_OPEN);
             }
 
+            telemetry.addData("Status", "***** TOP GLYPH CONTROL *****");
+        }
 
+                if (gamepad2.right_trigger > 0.5 || gamepad2.left_trigger > 0.5) {
 
+            telemetry.addData("Status", "BOTTOM Glyph Servo ");
+
+            if (gamepad2.left_trigger > 0.5) { //left_stick_y * 100 >= threshold)
+                bottomRightGlyphHolder.setPosition(GLYPH_BOTTOM_RIGHT_SERVO_CLOSE);
+                bottomLeftGlyphHolder.setPosition(GLYPH_BOTTOM_LEFT_SERVO_CLOSE);
+            }
+            else { //right_trigger
+                bottomRightGlyphHolder.setPosition(GLYPH_BOTTOM_RIGHT_SERVO_OPEN);
+                bottomLeftGlyphHolder.setPosition(GLYPH_BOTTOM_LEFT_SERVO_OPEN);
+            }
+
+            telemetry.addData("Status", "***** BOTTOM GLYPH CONTROL *****");
+        }
 /*
         // ==========================================================
         // JEWEL Pusher
         if (gamepad1.left_bumper) {
-            jewel_pusher_arm.setPosition(0);
+            jewelPusherArm.setPosition(0);
             telemetry.addData("Status", "***** JEWEL Pusher Left bumper *****");
         }
 
         if (gamepad1.right_bumper) {
-            jewel_pusher_arm.setPosition(.5);
+            jewelPusherArm.setPosition(.5);
             telemetry.addData("Status", "***** JEWEL Pusher Right bumper *****");
         }
 
@@ -294,10 +393,10 @@ public class TeleOp2017 extends HardwareClass_V2{
 
         // In-place turning - GAMEPAD1 RIGHT stick
         if (abs(gamepad1.right_stick_x) * 100 >= threshold) {
-            LFspeed = -gamepad1.right_stick_x;  // Turning right - Left motors forward, right backward
-            LBspeed = -gamepad1.right_stick_x;
-            RBspeed = gamepad1.right_stick_x;
-            RFspeed = gamepad1.right_stick_x;
+                LFspeed = gamepad1.right_stick_x;  // Turning right - Left motors forward, right backward
+                LBspeed = gamepad1.right_stick_x;
+                RBspeed = -gamepad1.right_stick_x;
+                RFspeed = -gamepad1.right_stick_x;
         }
 
         LFspeed = Range.clip(LFspeed, -1, 1);
@@ -305,11 +404,12 @@ public class TeleOp2017 extends HardwareClass_V2{
         RFspeed = Range.clip(RFspeed, -1, 1);
         RBspeed = Range.clip(RBspeed, -1, 1);
 
-        if (gamepad1.left_trigger>0.5){
-            LFspeed = LFspeed/6;
-            LBspeed = LBspeed/6;
-            RFspeed = RFspeed/6;
-            RBspeed = RBspeed/6 ;
+        // lowe the speed
+        if (lowSpeed) {
+            LFspeed = LFspeed / 5;
+            LBspeed = LBspeed / 5;
+            RFspeed = RFspeed / 5;
+            RBspeed = RBspeed / 5;
         }
 
         right_front_motor.setPower(RFspeed);
@@ -328,4 +428,3 @@ public class TeleOp2017 extends HardwareClass_V2{
     }
 
 }
-

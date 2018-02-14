@@ -27,14 +27,36 @@ public abstract class HardwareClass_V2 extends OpMode {
     protected static DcMotor lift_motor = null;
     protected static DcMotor relic_motor = null;
 
-    protected static Servo leftGlyphHolder  = null;
-    protected static Servo rightGlyphHolder  = null;
+    protected static Servo bottom_right_hand  = null;
+    protected static Servo bottom_left_hand  = null;
+    protected static Servo glyph_rotator  = null;
+    protected static Servo jewel_pusher  = null;
+    protected static Servo top_right_hand  = null;
+    protected static Servo top_left_hand  = null;
+    protected static Servo jewel_pusher_arm  = null;
 
-    public Servo jewelPusherArm   = null;
+
+    //public Servo jewelPusherArm   = null;
     public Servo relicGrabber_hand   = null;
     public Servo relicGrabber_base   = null;
     protected static ModernRoboticsI2cGyro gyro  = null;
     protected static ModernRoboticsI2cColorSensor Color_jewel  = null;
+
+    //Init Parameters
+
+    public static final double GLYPH_BOTTOM_RIGHT_SERVO_OPEN       =  0.20 ;
+    public static final double GLYPH_BOTTOM_RIGHT_SERVO_CLOSE      =  0.55 ;
+    public static final double GLYPH_BOTTOM_LEFT_SERVO_OPEN       =  0.55 ;
+    public static final double GLYPH_BOTTOM_LEFT_SERVO_CLOSE      =  0.20 ;
+
+    public static final double GLYPH_ROTATOR_POSITION_A = 12.5/256.0;    //******
+    public static final double GLYPH_ROTATOR_POSITION_B = 33/256.0;      //******
+
+    public static final double JEWEL_PUSHER_REST = 256/256.0;    //******
+    public static final double JEWEL_PUSHER_ARM_REST= 0/256.0;    //******
+
+
+
 
 
 
@@ -51,9 +73,15 @@ public abstract class HardwareClass_V2 extends OpMode {
         lift_motor = hardwareMap.dcMotor.get("lift");
         relic_motor = hardwareMap.dcMotor.get("relicGrabber");
 
-        rightGlyphHolder = hardwareMap.servo.get("right_hand");
-        leftGlyphHolder = hardwareMap.servo.get("left_hand");
-       jewelPusherArm = hardwareMap.servo.get("jewel_arm");
+        bottom_left_hand = hardwareMap.servo.get("bottom_left_hand");
+        bottom_right_hand = hardwareMap.servo.get("bottom_right_hand");
+        top_left_hand = hardwareMap.servo.get("top_left_hand");
+        top_right_hand = hardwareMap.servo.get("top_right_hand");
+
+        glyph_rotator = hardwareMap.servo.get("glyph_rotator");
+        jewel_pusher = hardwareMap.servo.get("jewel_pusher");
+
+        jewel_pusher_arm = hardwareMap.servo.get("jewel_pusher_arm");
 //        relicGrabber_hand = hardwareMap.servo.get("relicGrabber_hs");
 //        relicGrabber_base = hardwareMap.servo.get("relicGrabber_bs");
 

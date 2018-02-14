@@ -3,10 +3,13 @@ package com.techietitans.opmodes;
 
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 import com.techietitans.libraries.DataLogger;
+import com.techietitans.libraries.HardwareClass_V2;
 import com.techietitans.libraries.TTCrypto;
 
 import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
@@ -15,7 +18,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
 
 @Autonomous(group = "TechieTitans")
 //@Disabled
-public class TT2Auto2017 extends TeleOp2017 {
+public class TT2Auto2017 extends HardwareClass_V2{
 
     int currentState = 0;
     int previousState = 7;
@@ -86,7 +89,16 @@ public class TT2Auto2017 extends TeleOp2017 {
     public void init() {
         //Get initialization..mainly servos.
         super.init();
-        //initBeaconPusher();
+        
+        //init Servos
+        bottom_right_hand.setPosition(GLYPH_BOTTOM_RIGHT_SERVO_OPEN); 
+        bottom_left_hand.setPosition(GLYPH_BOTTOM_LEFT_SERVO_OPEN); 
+        glyph_rotator.setPosition(GLYPH_ROTATOR_POSITION_A);
+        jewel_pusher.setPosition(JEWEL_PUSHER_REST);
+        top_right_hand.setPosition(0.5);
+        top_left_hand.setPosition(0.0);
+        jewel_pusher_arm.setPosition(JEWEL_PUSHER_ARM_REST);
+        
         // Calibrate the gyro.
         gyro.calibrate();
         // Set all drive train motors to run using encoders
@@ -122,13 +134,11 @@ public class TT2Auto2017 extends TeleOp2017 {
         if (gamepad1.left_bumper)   {
 
             jewelEnabled = false;
-
         }
 
         if (gamepad1.right_bumper)  {
 
             jewelEnabled = true;
-
         }
 
         //allianceColor = Colors.RED;
@@ -195,69 +205,77 @@ public class TT2Auto2017 extends TeleOp2017 {
                 break;
             case 1:
                 // Grab the glyph
-                rightGlyphHolder.setPosition(GLYPH_RIGHT_SERVO_CLOSE);
-                leftGlyphHolder.setPosition(GLYPH_LEFT_SERVO_CLOSE);
+                bottom_right_hand.setPosition(GLYPH_BOTTOM_RIGHT_SERVO_CLOSE);
+                bottom_left_hand.setPosition(GLYPH_BOTTOM_LEFT_SERVO_CLOSE);
                 runtime.reset();
                 currentState++;
                 break;
             case 2:
                 // Lift the glyph to mid height
+                //Going with timer, should change to encoder count
                 lift_motor.setPower(0.3);
                 if (runtime.milliseconds()>500){
                     lift_motor.setPower(0.0);
                     runtime.reset();
+                    //This step is mainly for development.
+                    //With this config, we can skip jewel push during development to save time and hardware
                     if (jewelEnabled == true)
                         currentState++;
                     else //TODO:Adjust when needed, if a step is added in jewel pushing.
-                        currentState = 8;
+                        currentState = 7;
                 }
-
-
                 break;
             case 3:
-                // Lower the Jewel Servo
-
-
-
-                jewelPusherArm.setPosition(17.5 / 255);
+                // Lower the Jewel Arm Servo - AND -
+                // Bring out Jewel servo from resting position
+                jewel_pusher.setPosition(118.0/256);
+                jewel_pusher_arm.setPosition(12.0 / 256);
                 if (runtime.milliseconds() > 3000) {
                     currentState++;
+                        runtime.reset();
 
                 }
-
                 break;
             case 4:
-                // Decide turn direction
-                //if color sensor and alliance color is same the turn right
-                // (when color sensor is pointed at right)
+                // Detect the Jewel color. Pause for 1 sec to get stable reading
                 if (Color_jewel.red()>Color_jewel.blue()){
                     jewelColor= Colors.RED;
                 }
                 else{
                     jewelColor= Colors.BLUE;
                 }
-                turnDirection = (jewelColor == allianceColor) ? Sides.LEFT : Sides.RIGHT;
-                UndoturnDirection = (turnDirection == Sides.RIGHT) ? Sides.LEFT : Sides.RIGHT;
-                currentState++;
-                break;
-            case 5:
-                // Turn to remove the jewel
-                if (gyroPointTurn(.2, turnDirection, 10)) {
+                if (runtime.milliseconds() > 1000) {
                     currentState++;
                     runtime.reset();
                 }
                 break;
+            case 5:
+                // remove the jewel
+                //if color sensor and alliance color is same the move right, else left
+                // (when color sensor is pointed at right side of the arm)
+                if (jewelColor == allianceColor){
+                    jewel_pusher.setPosition(30.0/256);
+                }
+                else{
+                    jewel_pusher.setPosition(240.0/256);
+                }
 
+                if (runtime.milliseconds() > 2000) {
+                    currentState++;
+                    runtime.reset();
+                }
+                break;
             case 6:
                 // Bring back the jewel servo
-                jewelPusherArm.setPosition(0);
+                jewel_pusher_arm.setPosition(JEWEL_PUSHER_ARM_REST);
+                jewel_pusher.setPosition(JEWEL_PUSHER_REST);
                 //Turn off LED of the color sensor Used to detect jewel.
                 Color_jewel.enableLed(false);
                 if (runtime.milliseconds()>2000){
                     currentState++;
                 }
                 break;
-
+            //************END of Jewel Push
             case 7:
                 // Undo the turn
                 if (gyroPointTurn(.2, UndoturnDirection, 10)) {
@@ -282,19 +300,17 @@ public class TT2Auto2017 extends TeleOp2017 {
             case 9:
                 if (collumn == 2)   {
 
-                    if (gyroPointTurn(.2, Sides.RIGHT, 60)) {
+                    if (gyroPointTurn(.3, Sides.RIGHT, 60)) {
                         runtime.reset();
                         currentState++;
                     }
 
                     moveDistance = 750;
-
-
                 }
 
                 else if (collumn == 1)  {
 
-                    if (gyroPointTurn(.2, Sides.RIGHT, 37)) {
+                    if (gyroPointTurn(.3, Sides.RIGHT, 37)) {
                         runtime.reset();
                         currentState++;
                     }
@@ -305,7 +321,7 @@ public class TT2Auto2017 extends TeleOp2017 {
                 // Column 0 - it will come here from DEFAULT case
                 else {
 
-                    if (gyroPointTurn(.2, Sides.RIGHT, 17)) {
+                    if (gyroPointTurn(.3, Sides.RIGHT, 16)) {
                         runtime.reset();
                         currentState++;
                     }
@@ -317,7 +333,7 @@ public class TT2Auto2017 extends TeleOp2017 {
                 break;
 
             case 10:
-                // Move front to the drop zone
+                // Move front to the drop zone -First move
                 if ((driveWithEncoders(-0.3, -0.3, moveDistance, moveDistance))|| (runtime.milliseconds()>5000)) {
                     runtime.reset();
                     if (collumn>1)
@@ -329,14 +345,14 @@ public class TT2Auto2017 extends TeleOp2017 {
             //** Only for Column 3 - Start
             case 11:
                 // Undo angle
-                if (gyroPointTurn(.2, Sides.LEFT, 20)) {
+                if (gyroPointTurn(.2, Sides.LEFT, 23)) {
                     currentState++;
                 }
                 break;
 
             case 12:
-                // Move front to the drop zone
-                if ((driveWithEncoders(-0.3, -0.3, 150, 150))|| (runtime.milliseconds()>5000)) {
+                // Move front to the drop zone - 2nd move
+                if ((driveWithEncoders(-0.2, -0.2, 150, 150))|| (runtime.milliseconds()>5000)) {
                     runtime.reset();
                     currentState++;
                 }
@@ -361,8 +377,8 @@ public class TT2Auto2017 extends TeleOp2017 {
 
             case 14:
                 // Release glyph
-                rightGlyphHolder.setPosition(GLYPH_RIGHT_SERVO_OPEN);
-                leftGlyphHolder.setPosition(GLYPH_LEFT_SERVO_OPEN);
+                bottom_right_hand.setPosition(GLYPH_BOTTOM_RIGHT_SERVO_OPEN);
+                bottom_left_hand.setPosition(GLYPH_BOTTOM_LEFT_SERVO_OPEN);
                 currentState ++;
                 break;
 
@@ -383,13 +399,50 @@ public class TT2Auto2017 extends TeleOp2017 {
 
                 break;
 
-          /*  case 17:
-                // Come back..away
-                if (driveWithEncoders(0.2, 0.2, 70, 70)) {
+            case 17:
+                // Come back
+                if (driveWithEncoders(0.2, 0.2, 200, 200)) {
                     currentState++;
                 }
 
-                break; */
+                break;
+
+            case 18:
+                // Turn to be parallel to the block
+                if (collumn == 2||collumn == 1)   {
+                    if (gyroPointTurn(.2, Sides.RIGHT, 53)) {
+                        currentState++;
+                    }
+
+                }
+
+                else   {
+                    if (gyroPointTurn(.2, Sides.RIGHT, 74)) {
+                        currentState++;
+                    }
+
+                }
+
+                break;
+
+            case 19:
+                // Come back
+                if (driveWithEncoders(0.2, 0.2, 175, 175)) {
+                    currentState++;
+                }
+
+                break;
+
+
+            case 20:
+                // Come back
+                if (driveWithEncoders(0.2, 0.2, 175, 175)) {
+                    currentState++;
+                }
+
+                break;
+
+
             case 99:
                 // Recovery State. Any known failures will lead the state machine to this state.
                 // Display in telemetry and log to the file
@@ -411,7 +464,7 @@ public class TT2Auto2017 extends TeleOp2017 {
         telemetry.addData("Jewel : ", jewelColor);
         telemetry.addData("Red : ",Color_jewel.red());
         telemetry.addData("Blue : ",Color_jewel.blue());
-        telemetry.addData("Turn : ",turnDirection);
+        telemetry.addData("Alliance : ",allianceColor);
 
 
         // Write data to log file..if enabled and log duration has reached
@@ -466,8 +519,32 @@ public class TT2Auto2017 extends TeleOp2017 {
     //Drives all 4 wheel to a desired encoder count
     // it works on relative position. so, we don't need to reset encoder
 
-
+   //TODO: Big issues here
+    //*************MUST FIX
     boolean driveWithEncoders
+            (double left_power
+                    , double right_power
+                    , double left_count
+                    , double right_count
+            )
+
+    {
+        if (!isRunning) {
+            //This block should only execute once
+            //Set starting position
+            leftStartPosition = left_front_motor.getCurrentPosition();
+            rightStartPosition = right_front_motor.getCurrentPosition();
+            //Set motor speed
+            left_front_motor.setPower(left_power);
+            right_front_motor.setPower(right_power);
+            left_back_motor.setPower(left_power);
+            right_back_motor.setPower(right_power);
+            isRunning = true;
+        }
+        return true;
+    }
+
+    boolean strafeWithEncoders
             (double left_power
                     , double right_power
                     , double left_count
