@@ -1,33 +1,29 @@
 
-package com.techietitans.opmodes;
+package com.techietitans.libraries;
 
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
-import com.techietitans.libraries.DataLogger;
-import com.techietitans.libraries.HardwareClass_V2;
-import com.techietitans.libraries.TTCrypto;
 
 import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
 
 //---VueForia-Specific-Imports---
 
 @Autonomous(group = "TechieTitans")
-//@Disabled
-public class TT2Auto2017 extends HardwareClass_V2{
+@Disabled
+public class TTAutoCommon extends HardwareClass_V2{
 
-    int currentState = 0;
+    public int CommoncurrentState = 0;
     int previousState = 7;
     boolean isRunning = false;
     boolean isResetRunning = false;
     DataLogger dl;
     private ElapsedTime runtime = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
-    Colors allianceColor;
-    Colors jewelColor;
+    protected static Colors allianceColor = Colors.RED;
+    protected static Colors jewelColor;
     boolean IsPushed = false;
     boolean isRobotLost = false;
     int leftStartPosition;
@@ -43,12 +39,11 @@ public class TT2Auto2017 extends HardwareClass_V2{
     int shooterInit=0;
     double allianceSpecific;
     int allianceSpecificDistance;
-    boolean shortVersion = false;
-    boolean jewelEnabled = true;
-    int moveDistance = 0;
+    boolean jewelEnabled = false;
+
 
     //---VueForia-Specific-Variables---
-    //TODO:Move these to another class like hardware class so that we dont have to declare in all code.
+    //TODO:Move these to another class like hardware class so that we don't have to declare in all code.
     private TTCrypto vu;
     private RelicRecoveryVuMark vm;
     int collumn = 0; //0 is left 1 is middle 2 is right default to 0 so that it defaults to left row the row with least margin for error
@@ -70,7 +65,7 @@ public class TT2Auto2017 extends HardwareClass_V2{
      * Construct the class.
      * The system calls this member when the class is instantiated.
      */
-    public TT2Auto2017() {
+    public TTAutoCommon() {
         // Initialize base classes.
         // All via self-construction.
 
@@ -115,12 +110,14 @@ public class TT2Auto2017 extends HardwareClass_V2{
     @Override
     public void init_loop() {
         vm = vu.getViewResult();
-        if (vm == RelicRecoveryVuMark.RIGHT)
+
+     if (vm == RelicRecoveryVuMark.RIGHT)
             collumn = 2;
         else if (vm == RelicRecoveryVuMark.CENTER)
             collumn = 1;
         else
             collumn = 0;
+
 
         telemetry.addData("Placing in ",vm);
         //Get Alliance selection
@@ -158,35 +155,7 @@ public class TT2Auto2017 extends HardwareClass_V2{
     @Override
     public void start() {
 
-        currentState = 0;
-        //TODO: Change for 2017 data points
-        if (logEnabled) {
-            //Set a new data logger and header of the file
-//            dl = new DataLogger("Dl_TT_Auto_V4");
-//            dl.addField("LoopCounter");
-//            dl.addField("State");
-//            dl.addField("Left Motor Position");
-//            dl.addField("Left Motor Power");
-//            dl.addField("Right Motor Position");
-//            dl.addField("Right Motor Power");
-//            dl.addField("Gyro");
-//            dl.addField("ODS");
-//            dl.addField("Left_Color");
-//            dl.addField("Left_R");
-//            dl.addField("Left_B");
-//            dl.addField("Left_G");
-//            dl.addField("Right_Color");
-//            dl.addField("Right_R");
-//            dl.addField("Right_B");
-//            dl.addField("Right_G");
-//            dl.addField("Left_Pusher");
-//            dl.addField("Right_Pusher");
-//            dl.addField("Bottom_Color");
-//            dl.addField("Bottom_R");
-//            dl.addField("Bottom_B");
-//            dl.addField("Bottom_G");
-//            dl.newLine();
-        }
+        CommoncurrentState = 0;
     }
 
     //*****************************************************************************
@@ -194,21 +163,24 @@ public class TT2Auto2017 extends HardwareClass_V2{
     public void loop() {
 
         //*********Start State Machine
-        switch (currentState) {
+        switch (CommoncurrentState) {
             //Tasks are broken down to finite STATES. We will increment to to next state after successful
             // completion of each state.
 
             case 0:
                 //First state
-                currentState++;
+                CommoncurrentState++;
                 gyro.resetZAxisIntegrator();
+                runtime.reset();
                 break;
             case 1:
                 // Grab the glyph
                 bottom_right_hand.setPosition(GLYPH_BOTTOM_RIGHT_SERVO_CLOSE);
                 bottom_left_hand.setPosition(GLYPH_BOTTOM_LEFT_SERVO_CLOSE);
-                runtime.reset();
-                currentState++;
+                if (runtime.milliseconds()>1500) {
+                    runtime.reset();
+                    CommoncurrentState++;
+                }
                 break;
             case 2:
                 // Lift the glyph to mid height
@@ -220,18 +192,18 @@ public class TT2Auto2017 extends HardwareClass_V2{
                     //This step is mainly for development.
                     //With this config, we can skip jewel push during development to save time and hardware
                     if (jewelEnabled == true)
-                        currentState++;
+                        CommoncurrentState++;
                     else //TODO:Adjust when needed, if a step is added in jewel pushing.
-                        currentState = 7;
+                        CommoncurrentState = 7;
                 }
                 break;
             case 3:
                 // Lower the Jewel Arm Servo - AND -
                 // Bring out Jewel servo from resting position
-                jewel_pusher.setPosition(118.0/256);
+                jewel_pusher.setPosition(120.0/256);
                 jewel_pusher_arm.setPosition(12.0 / 256);
-                if (runtime.milliseconds() > 3000) {
-                    currentState++;
+                if (runtime.milliseconds() > 2000) {
+                    CommoncurrentState++;
                         runtime.reset();
 
                 }
@@ -245,7 +217,7 @@ public class TT2Auto2017 extends HardwareClass_V2{
                     jewelColor= Colors.BLUE;
                 }
                 if (runtime.milliseconds() > 1000) {
-                    currentState++;
+                    CommoncurrentState++;
                     runtime.reset();
                 }
                 break;
@@ -259,12 +231,12 @@ public class TT2Auto2017 extends HardwareClass_V2{
                 else{
                     jewel_pusher.setPosition(240.0/256);
                 }
-
-                if (runtime.milliseconds() > 2000) {
-                    currentState++;
+                if (runtime.milliseconds() > 1000) {
+                    CommoncurrentState++;
                     runtime.reset();
                 }
                 break;
+
             case 6:
                 // Bring back the jewel servo
                 jewel_pusher_arm.setPosition(JEWEL_PUSHER_ARM_REST);
@@ -272,176 +244,10 @@ public class TT2Auto2017 extends HardwareClass_V2{
                 //Turn off LED of the color sensor Used to detect jewel.
                 Color_jewel.enableLed(false);
                 if (runtime.milliseconds()>2000){
-                    currentState++;
+                    CommoncurrentState++;
                 }
                 break;
             //************END of Jewel Push
-            case 7:
-                // Undo the turn
-                if (gyroPointTurn(.2, UndoturnDirection, 10)) {
-                    currentState++;
-                }
-
-                break;
-
-            case 8:
-                // Come down and move towards glyph drop zone
-                //TODO: Adjust alliance specific parameters
-
-                allianceSpecific = (allianceColor == Colors.RED) ? 0.15 : -0.15;
-                allianceSpecificDistance = (allianceColor == Colors.RED) ? 2050 : 2050;
-
-                if (driveWithEncoders(allianceSpecific, allianceSpecific, allianceSpecificDistance, allianceSpecificDistance)) {
-                    currentState++;
-                }
-                break;
-
-
-            case 9:
-                if (collumn == 2)   {
-
-                    if (gyroPointTurn(.3, Sides.RIGHT, 60)) {
-                        runtime.reset();
-                        currentState++;
-                    }
-
-                    moveDistance = 750;
-                }
-
-                else if (collumn == 1)  {
-
-                    if (gyroPointTurn(.3, Sides.RIGHT, 37)) {
-                        runtime.reset();
-                        currentState++;
-                    }
-
-                    moveDistance = 650;
-
-                }
-                // Column 0 - it will come here from DEFAULT case
-                else {
-
-                    if (gyroPointTurn(.3, Sides.RIGHT, 16)) {
-                        runtime.reset();
-                        currentState++;
-                    }
-
-                    moveDistance = 450;
-
-                }
-
-                break;
-
-            case 10:
-                // Move front to the drop zone -First move
-                if ((driveWithEncoders(-0.3, -0.3, moveDistance, moveDistance))|| (runtime.milliseconds()>5000)) {
-                    runtime.reset();
-                    if (collumn>1)
-                    currentState++;
-                    else currentState = 13;
-                }
-
-                break;
-            //** Only for Column 3 - Start
-            case 11:
-                // Undo angle
-                if (gyroPointTurn(.2, Sides.LEFT, 23)) {
-                    currentState++;
-                }
-                break;
-
-            case 12:
-                // Move front to the drop zone - 2nd move
-                if ((driveWithEncoders(-0.2, -0.2, 150, 150))|| (runtime.milliseconds()>5000)) {
-                    runtime.reset();
-                    currentState++;
-                }
-
-                break;
-            //** Only for Column 3 - End
-            case 13:
-                // Lower glyph -- Not sure if we need it
-                // Lift the glyph to mid height
-                lift_motor.setPower(-0.3);
-                if (runtime.milliseconds()>500){
-                    lift_motor.setPower(0.0);
-                    currentState++;
-                    runtime.reset();
-                }if ((driveWithEncoders(-0.3, -0.3, 150, 150))|| (runtime.milliseconds()>5000)) {
-                runtime.reset();
-                currentState++;
-            }
-
-                break;
-
-
-            case 14:
-                // Release glyph
-                bottom_right_hand.setPosition(GLYPH_BOTTOM_RIGHT_SERVO_OPEN);
-                bottom_left_hand.setPosition(GLYPH_BOTTOM_LEFT_SERVO_OPEN);
-                currentState ++;
-                break;
-
-
-            case 15:
-                // Secure glyph
-                if (driveWithEncoders(-0.1, -0.2, 100, 150)) {
-                    currentState++;
-                }
-
-                break;
-
-            case 16:
-                // Come back
-                if (driveWithEncoders(0.3, 0.3, 300, 300)) {
-                    currentState++;
-                }
-
-                break;
-
-            case 17:
-                // Come back
-                if (driveWithEncoders(0.2, 0.2, 200, 200)) {
-                    currentState++;
-                }
-
-                break;
-
-            case 18:
-                // Turn to be parallel to the block
-                if (collumn == 2||collumn == 1)   {
-                    if (gyroPointTurn(.2, Sides.RIGHT, 53)) {
-                        currentState++;
-                    }
-
-                }
-
-                else   {
-                    if (gyroPointTurn(.2, Sides.RIGHT, 74)) {
-                        currentState++;
-                    }
-
-                }
-
-                break;
-
-            case 19:
-                // Come back
-                if (driveWithEncoders(0.2, 0.2, 175, 175)) {
-                    currentState++;
-                }
-
-                break;
-
-
-            case 20:
-                // Come back
-                if (driveWithEncoders(0.2, 0.2, 175, 175)) {
-                    currentState++;
-                }
-
-                break;
-
 
             case 99:
                 // Recovery State. Any known failures will lead the state machine to this state.
@@ -457,44 +263,21 @@ public class TT2Auto2017 extends HardwareClass_V2{
                 break;
         }
 
-        previousState = currentState;
+        previousState = CommoncurrentState;
         loopCounter++;
 
-        telemetry.addData("state: ", currentState);
+        telemetry.addData("state: ", CommoncurrentState);
         telemetry.addData("Jewel : ", jewelColor);
         telemetry.addData("Red : ",Color_jewel.red());
         telemetry.addData("Blue : ",Color_jewel.blue());
         telemetry.addData("Alliance : ",allianceColor);
+        telemetry.addData("Placing in ",collumn);
 
 
         // Write data to log file..if enabled and log duration has reached
         //TODO: Change for 2017 data points
         if ((logEnabled) && ((System.currentTimeMillis()- logTime)>100)){
 //            dl.addField(String.valueOf(loopCounter));
-//            dl.addField(String.valueOf(currentState));
-//            dl.addField(String.valueOf(left_front_motor.getCurrentPosition()));
-//            dl.addField(String.valueOf(left_front_motor.getPower()));
-//            dl.addField(String.valueOf(right_front_motor.getCurrentPosition()));
-//            dl.addField(String.valueOf(right_front_motor.getPower()));
-//            dl.addField(String.valueOf(gyro.getIntegratedZValue()));
-//            dl.addField(String.valueOf(ods_front.getLightDetected()));
-//            dl.addField(String.valueOf(getLeftBeaconColor()));
-//            dl.addField(String.valueOf(mrcolor_front.red()));
-//            dl.addField(String.valueOf(mrcolor_front.blue()));
-//            dl.addField(String.valueOf(mrcolor_front.green()));
-//            dl.addField(String.valueOf(getRightBeaconColor()));
-//            dl.addField(String.valueOf(cs.red()));
-//            dl.addField(String.valueOf(cs.blue()));
-//            dl.addField(String.valueOf(cs.green()));
-//            dl.addField(String.valueOf(pusher_left.getPosition()));
-//            dl.addField(String.valueOf(pusher_right.getPosition()));
-//            dl.addField(String.valueOf(getLineColor()));
-//            dl.addField(String.valueOf(mrcolor_under.red()));
-//            dl.addField(String.valueOf(mrcolor_under.blue()));
-//            dl.addField(String.valueOf(mrcolor_under.green()));
-//            dl.addField(String.valueOf(IsPushed));
-//            dl.addField(String.valueOf(pushSuccessful()));
-//            dl.addField(String.valueOf(recoveryCount));
 //            dl.newLine();
             //Reset counter
             logTime = System.currentTimeMillis();
@@ -519,36 +302,49 @@ public class TT2Auto2017 extends HardwareClass_V2{
     //Drives all 4 wheel to a desired encoder count
     // it works on relative position. so, we don't need to reset encoder
 
-   //TODO: Big issues here
     //*************MUST FIX
-    boolean driveWithEncoders
+   public boolean driveWithEncoders
+   (double left_power
+           , double right_power
+           , double left_count
+           , double right_count
+   )
+
+   {
+       if (!isRunning) {
+           //This block should only execute once
+           //Set starting position
+           leftStartPosition = left_front_motor.getCurrentPosition();
+           rightStartPosition = right_front_motor.getCurrentPosition();
+           //Set motor speed
+           left_front_motor.setPower(left_power);
+           right_front_motor.setPower(right_power);
+           left_back_motor.setPower(left_power);
+           right_back_motor.setPower(right_power);
+           isRunning = true;
+       }
+
+       //ToDo: add proportional slow down
+
+       //Done - if the target is reached
+       if (leftEncoder_reached(left_count) || rightEncoder_reached(right_count)) {
+           left_front_motor.setPower(0);
+           right_front_motor.setPower(0);
+           left_back_motor.setPower(0);
+           right_back_motor.setPower(0);
+           isRunning = false;
+           return true;
+       }
+       return false;
+   }
+
+
+    public boolean driveWithEncodersV2
             (double left_power
                     , double right_power
                     , double left_count
                     , double right_count
-            )
-
-    {
-        if (!isRunning) {
-            //This block should only execute once
-            //Set starting position
-            leftStartPosition = left_front_motor.getCurrentPosition();
-            rightStartPosition = right_front_motor.getCurrentPosition();
-            //Set motor speed
-            left_front_motor.setPower(left_power);
-            right_front_motor.setPower(right_power);
-            left_back_motor.setPower(left_power);
-            right_back_motor.setPower(right_power);
-            isRunning = true;
-        }
-        return true;
-    }
-
-    boolean strafeWithEncoders
-            (double left_power
-                    , double right_power
-                    , double left_count
-                    , double right_count
+                    , int timeout
             )
 
     {
@@ -568,7 +364,41 @@ public class TT2Auto2017 extends HardwareClass_V2{
         //ToDo: add proportional slow down
 
         //Done - if the target is reached
-        if (leftEncoder_reached(left_count) || rightEncoder_reached(right_count)) {
+        if (leftEncoder_reached(left_count) || rightEncoder_reached(right_count) || (runtime.milliseconds()>timeout)) {
+            left_front_motor.setPower(0);
+            right_front_motor.setPower(0);
+            left_back_motor.setPower(0);
+            right_back_motor.setPower(0);
+            isRunning = false;
+            return true;
+        }
+        return false;
+    }
+
+    boolean strafeWithEncoders
+            (double strafePower
+                    , double strafeCount
+
+            )
+
+    {
+        if (!isRunning) {
+            //This block should only execute once
+            //Set starting position
+            leftStartPosition = left_front_motor.getCurrentPosition();
+            rightStartPosition = right_front_motor.getCurrentPosition();
+            //Set motor speed
+            left_front_motor.setPower(-strafePower);
+            right_front_motor.setPower(strafePower);
+            left_back_motor.setPower(strafePower);
+            right_back_motor.setPower(-strafePower);
+            isRunning = true;
+        }
+
+        //ToDo: add proportional slow down
+
+        //Done - if the target is reached
+        if (leftEncoder_reached(strafeCount) || rightEncoder_reached(strafeCount)) {
             left_front_motor.setPower(0);
             right_front_motor.setPower(0);
             left_back_motor.setPower(0);
@@ -582,7 +412,7 @@ public class TT2Auto2017 extends HardwareClass_V2{
     //gyroPointTurn:
     //================
     //
-    boolean gyroPointTurn(double power
+    public boolean gyroPointTurn(double power
             , Sides turnDirection
             , int angle
     ) {
@@ -634,8 +464,67 @@ public class TT2Auto2017 extends HardwareClass_V2{
         return false;
     }
 
+    public boolean gyroPointTurnV2(
+            double power
+            , Sides turnDirection
+            , int angle
+            , int timeout
+            )
+    {
+        int progress;
+        int error;
+        double correction;
 
+        if (!isRunning) {
+            //This block should only execute once
+            //Set starting position
+            startDirection = gyro.getIntegratedZValue();
+            isRunning = true;
+        }
 
+        //ToDo: add proportional slow down. This is a bit tricky
+        // Power = Power*Error*P
+        // IntegratedZ value behaves much like Motor encoders. It keeps increasing
+        // Or decreasing from initial calibration point based on direction.
+        // Progress = Abs(Current position- start position)
+        // Error = Target - Progress
+        // So, Target will be reached as soon as Error is below threshold
+
+        progress = Math.abs(gyro.getIntegratedZValue() - startDirection);
+        error = angle-progress;
+        correction = Range.clip(error*0.1, 0,1); // P coefficient = .1
+        power = power*correction;
+
+        if (turnDirection == Sides.LEFT) {
+            left_front_motor.setPower(power);
+            left_back_motor.setPower(power);
+            right_front_motor.setPower(-power);
+            right_back_motor.setPower(-power);
+        }
+        if (turnDirection == Sides.RIGHT) {
+            left_front_motor.setPower(-power);
+            left_back_motor.setPower(-power);
+            right_front_motor.setPower(power);
+            right_back_motor.setPower(power);
+        }
+        // Target is reached if error is within threshold.. (2 degrees)
+        if (error<=2 || runtime.milliseconds()>timeout) {
+            left_front_motor.setPower(0);
+            right_front_motor.setPower(0);
+            left_back_motor.setPower(0);
+            right_back_motor.setPower(0);
+            isRunning = false;
+            return true;
+        }
+        return false;
+    }
+
+    public void stopMotors() {
+        left_front_motor.setPower(0);
+        right_front_motor.setPower(0);
+        left_back_motor.setPower(0);
+        right_back_motor.setPower(0);
+    }
     //Set both drive wheel encoder to run, if the mode is appropriate.
     public void useEncoders() {
         // perform the action on both motors.

@@ -30,7 +30,7 @@ CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
 THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-package org.firstinspires.ftc.teamcode;
+package com.techietitans.opmodes;
 
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
@@ -90,7 +90,7 @@ public class PushbotTeleopTank_Mecanum extends OpMode{
 
     /* Declare OpMode members. */
     // HardwarePushbot robot       = new HardwarePushbot(); // use the class created to define a Pushbot's hardware
-                                                         // could also use HardwarePushbotMatrix class.
+    // could also use HardwarePushbotMatrix class.
     // double          clawOffset  = 0.0 ;                  // Servo mid position
     // final double    CLAW_SPEED  = 0.02 ;                 // sets rate to move servo
 
@@ -110,19 +110,20 @@ public class PushbotTeleopTank_Mecanum extends OpMode{
     public Servo glyphHolderRotator    = null;
 
     public Servo jewelPusherArm   = null;
-    public Servo relicGrabber_hand   = null;
+    public Servo jewel_pusher  = null;
+    public Servo relicGrabber_claw   = null;
     public Servo relicGrabber_base   = null;
 
-    public static final double GLYPH_TOP_RIGHT_SERVO_OPEN       =  0.25 ;  // was 0.20
-    public static final double GLYPH_TOP_RIGHT_SERVO_CLOSE      =  0.60 ;  // was 0.55
-    public static final double GLYPH_TOP_LEFT_SERVO_OPEN       =  0.70 ;   // was 0.59 // opposite values than Right Servo
-    public static final double GLYPH_TOP_LEFT_SERVO_CLOSE      =  0.375 ;  // was 0.275
-    public static final double GLYPH_BOTTOM_RIGHT_SERVO_OPEN       =  0.20 ;
-    public static final double GLYPH_BOTTOM_RIGHT_SERVO_CLOSE      =  0.55 ;
-    public static final double GLYPH_BOTTOM_LEFT_SERVO_OPEN       =  0.55 ; // 0.59   // opposite values than Right Servo
-    public static final double GLYPH_BOTTOM_LEFT_SERVO_CLOSE      =  0.20 ; // 0.275
-    public static final double GLYPH_ROTATOR_POSITION_A = 12.5/256.0;
-    public static final double GLYPH_ROTATOR_POSITION_B = 33/256.0;
+    public static final double GLYPH_TOP_RIGHT_SERVO_OPEN       =  130/256.0 ;  // was 0.25
+    public static final double GLYPH_TOP_RIGHT_SERVO_CLOSE      =  35.0/255.0 ;  // was 0.6
+    public static final double GLYPH_TOP_LEFT_SERVO_OPEN       =  70.0/256.0 ;   // was 0.7 // opposite values than Right Servo
+    public static final double GLYPH_TOP_LEFT_SERVO_CLOSE      =   150.0/255.0;  // was 0.375
+    public static final double GLYPH_BOTTOM_RIGHT_SERVO_OPEN       =  50/256.0 ;
+    public static final double GLYPH_BOTTOM_RIGHT_SERVO_CLOSE      =  137/256.0 ;
+    public static final double GLYPH_BOTTOM_LEFT_SERVO_OPEN       =  137/256.0 ; // 0.59   // opposite values than Right Servo
+    public static final double GLYPH_BOTTOM_LEFT_SERVO_CLOSE      =  50/256.0 ; // 0.275
+    public static final double GLYPH_ROTATOR_POSITION_A = 14.0/256.0;
+    public static final double GLYPH_ROTATOR_POSITION_B = 33.0/256.0;
 
     private boolean lowSpeed = false;
     private boolean positionA = true;
@@ -151,8 +152,9 @@ public class PushbotTeleopTank_Mecanum extends OpMode{
         glyphHolderRotator = hardwareMap.servo.get("glyph_rotator");
 
 //        jewelPusherArm = hardwareMap.servo.get("jewel_arm");
-//        relicGrabber_hand = hardwareMap.servo.get("relicGrabber_hs");
-//        relicGrabber_base = hardwareMap.servo.get("relicGrabber_bs");
+        jewel_pusher = hardwareMap.servo.get("jewel_pusher");
+        relicGrabber_claw = hardwareMap.servo.get("relicGrabber_claw");
+        relicGrabber_base = hardwareMap.servo.get("relicGrabber_base");
 
         left_front_motor.setDirection(DcMotor.Direction.REVERSE);
         left_back_motor.setDirection(DcMotor.Direction.REVERSE);
@@ -168,6 +170,7 @@ public class PushbotTeleopTank_Mecanum extends OpMode{
         topLeftGlyphHolder.setPosition(GLYPH_TOP_LEFT_SERVO_OPEN);
         bottomRightGlyphHolder.setPosition(GLYPH_BOTTOM_RIGHT_SERVO_OPEN);
         bottomLeftGlyphHolder.setPosition(GLYPH_BOTTOM_LEFT_SERVO_OPEN);
+        jewel_pusher.setPosition(256/256.0);
 
     }
 
@@ -202,7 +205,7 @@ public class PushbotTeleopTank_Mecanum extends OpMode{
         float RFspeed = 0;
         float RBspeed = 0;
 
-        int threshold = 20;
+        int threshold = 10;
 
         telemetry.addData("Status", "Gamepad L: " + gamepad1.left_stick_x + " " + gamepad1.left_stick_y + " R: " + gamepad1.right_stick_x + " " + gamepad1.right_stick_y);
 
@@ -240,40 +243,45 @@ public class PushbotTeleopTank_Mecanum extends OpMode{
         // Lift motor - GAMEPAD2 LEFT STICK Y
         // check if it's going opposite direction (up vs down)
 
-        lift_motor.setPower(0);
+        double lift_motor_power = 0;
         if (abs(gamepad2.left_stick_y)*100 >= threshold) {  // no-op
-
             telemetry.addData("Status", "Lift motor ");
-            double motor_power;
 
+            lift_motor_power = gamepad2.left_stick_y;
+
+            /*
             if (gamepad2.left_stick_y > 0)
-                motor_power = 0.5;         // -ve going opposite?
+                lift_motor_power = 0.5;         // -ve going opposite?
             else
-                motor_power = -0.5;
-
-            telemetry.addData("Status", "***** Lift motor set power *****");
-            lift_motor.setPower(motor_power);
+                lift_motor_power = -0.5;
+             */
         }
+
+        telemetry.addData("Status", "***** Lift motor set power *****");
+        lift_motor_power = Range.clip(lift_motor_power, -1, 1);
+        lift_motor.setPower(lift_motor_power);
 
         // ========================================================
         // Relic motor - GAMEPAD2 RIGHT STICK Y
         // check if it's going opposite direction (up vs down)
 
-        relic_motor.setPower(0);
+        double relic_motor_power = 0;
         if (abs(gamepad2.right_stick_y)*100 >= threshold) {  // no-op
-
             telemetry.addData("Status", "Relic motor ");
-            double motor_power;
 
+            relic_motor_power = gamepad2.right_stick_y;
+
+            /*
             if (gamepad2.right_stick_y > 0)
-                motor_power = 1.0;         // -ve going opposite?
+                relic_motor_power = 1.0;         // -ve going opposite?
             else
-                motor_power = -0.5;
-
-            telemetry.addData("Status", "***** Relic motor set power *****");
-            relic_motor.setPower(motor_power);
+                relic_motor_power = -0.5;
+               */
         }
 
+        telemetry.addData("Status", "***** Relic motor set power *****");
+        relic_motor_power = Range.clip(relic_motor_power, -1, 1);
+        relic_motor.setPower(relic_motor_power);
 
 
         // ========================================================
@@ -309,7 +317,8 @@ public class PushbotTeleopTank_Mecanum extends OpMode{
             telemetry.addData("Status", "***** TOP GLYPH CONTROL *****");
         }
 
-                if (gamepad2.right_trigger > 0.5 || gamepad2.left_trigger > 0.5) {
+        // using JOYSTICK TRIGGERS for bottom glyph
+        if (gamepad2.right_trigger > 0.5 || gamepad2.left_trigger > 0.5) {
 
             telemetry.addData("Status", "BOTTOM Glyph Servo ");
 
@@ -336,39 +345,31 @@ public class PushbotTeleopTank_Mecanum extends OpMode{
             jewelPusherArm.setPosition(.5);
             telemetry.addData("Status", "***** JEWEL Pusher Right bumper *****");
         }
-
+*/
         // ==========================================================
-        // relic grabber
+        // relic grabber servo
 
-        // motor control
-        if (gamepad2.right_stick_button)
-            relic_motor.setPower(0);
 
-        if (abs(gamepad2.right_stick_y) > 0) {
-            float relic_motor_power = gamepad2.right_stick_y / 4;  // slowdown motor power
-            relic_motor.setPower(relic_motor_power);
-            telemetry.addData("Status", "***** relicGrabber motor *****");
-        }
 
         // servo control
         if (gamepad2.dpad_up) {
-            relicGrabber_base.setPosition(0.10);
+            relicGrabber_base.setPosition(21.0/256);    // standing position   // 31 - back flat
             telemetry.addData("Status", "***** relicGrabber_base up *****");
         }
         if (gamepad2.dpad_down) {
-            relicGrabber_base.setPosition(0.15);
+            relicGrabber_base.setPosition(10.0/256);        // grab position
             telemetry.addData("Status", "***** relicGrabber_base down *****");
         }
-        if (gamepad2.dpad_left) {
-            relicGrabber_hand.setPosition(0.10);
-            telemetry.addData("Status", "***** relicGrabber_hand left *****");
+        if (gamepad2.dpad_left) {   // close claw
+            relicGrabber_claw.setPosition(0.0);
+            telemetry.addData("Status", "***** relicGrabber_claw left / close *****");
         }
-        if (gamepad2.dpad_right) {
-            relicGrabber_hand.setPosition(0.15);
-            telemetry.addData("Status", "***** relicGrabber_hand right *****");
+        if (gamepad2.dpad_right) {  // open claw
+            relicGrabber_claw.setPosition(0.5);
+            telemetry.addData("Status", "***** relicGrabber_claw right /open *****");
         }
 
-*/
+
 
         /*
         //===========================================================================================
@@ -393,10 +394,10 @@ public class PushbotTeleopTank_Mecanum extends OpMode{
 
         // In-place turning - GAMEPAD1 RIGHT stick
         if (abs(gamepad1.right_stick_x) * 100 >= threshold) {
-                LFspeed = gamepad1.right_stick_x;  // Turning right - Left motors forward, right backward
-                LBspeed = gamepad1.right_stick_x;
-                RBspeed = -gamepad1.right_stick_x;
-                RFspeed = -gamepad1.right_stick_x;
+            LFspeed = gamepad1.right_stick_x;  // Turning right - Left motors forward, right backward
+            LBspeed = gamepad1.right_stick_x;
+            RBspeed = -gamepad1.right_stick_x;
+            RFspeed = -gamepad1.right_stick_x;
         }
 
         LFspeed = Range.clip(LFspeed, -1, 1);
@@ -428,3 +429,12 @@ public class PushbotTeleopTank_Mecanum extends OpMode{
     }
 
 }
+
+
+//PushbotTe ... anum.java
+
+//        Open with Drive Notepad
+
+
+
+

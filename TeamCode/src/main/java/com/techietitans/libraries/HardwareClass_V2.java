@@ -37,24 +37,35 @@ public abstract class HardwareClass_V2 extends OpMode {
 
 
     //public Servo jewelPusherArm   = null;
-    public Servo relicGrabber_hand   = null;
+    public Servo relicGrabber_claw  = null;
     public Servo relicGrabber_base   = null;
+
+
     protected static ModernRoboticsI2cGyro gyro  = null;
     protected static ModernRoboticsI2cColorSensor Color_jewel  = null;
 
     //Init Parameters
 
     public static final double GLYPH_BOTTOM_RIGHT_SERVO_OPEN       =  0.20 ;
-    public static final double GLYPH_BOTTOM_RIGHT_SERVO_CLOSE      =  0.55 ;
+    public static final double GLYPH_BOTTOM_RIGHT_SERVO_CLOSE      =  0.60 ;
     public static final double GLYPH_BOTTOM_LEFT_SERVO_OPEN       =  0.55 ;
-    public static final double GLYPH_BOTTOM_LEFT_SERVO_CLOSE      =  0.20 ;
+    public static final double GLYPH_BOTTOM_LEFT_SERVO_CLOSE      =  0.15 ;
 
-    public static final double GLYPH_ROTATOR_POSITION_A = 12.5/256.0;    //******
-    public static final double GLYPH_ROTATOR_POSITION_B = 33/256.0;      //******
+    public static final double GLYPH_TOP_LEFT_SERVO_INIT = 185.0/256.0;
+    public static final double GLYPH_TOP_RIGHT_SERVO_INIT = 10.0/256.0;
+
+
+    public static final double GLYPH_ROTATOR_POSITION_A = 15/256.0;
+    public static final double GLYPH_ROTATOR_POSITION_B = 35/256.0;
+
 
     public static final double JEWEL_PUSHER_REST = 256/256.0;    //******
-    public static final double JEWEL_PUSHER_ARM_REST= 0/256.0;    //******
+    public static final double JEWEL_PUSHER_ARM_REST= 1/256.0;
 
+    //******
+
+    //185
+    //10
 
 
 
@@ -82,8 +93,10 @@ public abstract class HardwareClass_V2 extends OpMode {
         jewel_pusher = hardwareMap.servo.get("jewel_pusher");
 
         jewel_pusher_arm = hardwareMap.servo.get("jewel_pusher_arm");
-//        relicGrabber_hand = hardwareMap.servo.get("relicGrabber_hs");
-//        relicGrabber_base = hardwareMap.servo.get("relicGrabber_bs");
+
+
+        //relicGrabber_claw = hardwareMap.servo.get("relicGrabber_claw");
+       // relicGrabber_base = hardwareMap.servo.get("relicGrabber_base");
 
         left_front_motor.setDirection(DcMotor.Direction.REVERSE);
         left_back_motor.setDirection(DcMotor.Direction.REVERSE);
