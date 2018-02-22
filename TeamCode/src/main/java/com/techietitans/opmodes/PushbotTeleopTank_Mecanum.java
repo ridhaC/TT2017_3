@@ -122,8 +122,8 @@ public class PushbotTeleopTank_Mecanum extends OpMode{
     public static final double GLYPH_BOTTOM_RIGHT_SERVO_CLOSE      =  137/256.0 ;
     public static final double GLYPH_BOTTOM_LEFT_SERVO_OPEN       =  137/256.0 ; // 0.59   // opposite values than Right Servo
     public static final double GLYPH_BOTTOM_LEFT_SERVO_CLOSE      =  50/256.0 ; // 0.275
-    public static final double GLYPH_ROTATOR_POSITION_A = 14.0/256.0;
-    public static final double GLYPH_ROTATOR_POSITION_B = 33.0/256.0;
+    public static final double GLYPH_ROTATOR_POSITION_A = 39/256.0;
+    public static final double GLYPH_ROTATOR_POSITION_B = 18/256.0;
 
     private boolean lowSpeed = false;
     private boolean positionA = true;
@@ -171,6 +171,8 @@ public class PushbotTeleopTank_Mecanum extends OpMode{
         bottomRightGlyphHolder.setPosition(GLYPH_BOTTOM_RIGHT_SERVO_OPEN);
         bottomLeftGlyphHolder.setPosition(GLYPH_BOTTOM_LEFT_SERVO_OPEN);
         jewel_pusher.setPosition(256/256.0);
+        relicGrabber_base.setPosition(33.0/255.0);
+        relicGrabber_claw.setPosition(0.0/255.0);
 
     }
 
@@ -249,12 +251,10 @@ public class PushbotTeleopTank_Mecanum extends OpMode{
 
             lift_motor_power = gamepad2.left_stick_y;
 
-            /*
-            if (gamepad2.left_stick_y > 0)
-                lift_motor_power = 0.5;         // -ve going opposite?
-            else
-                lift_motor_power = -0.5;
-             */
+
+            if (gamepad2.left_stick_y > 0)// -ve going opposite?
+                lift_motor_power = 0.2;
+
         }
 
         telemetry.addData("Status", "***** Lift motor set power *****");
@@ -317,12 +317,33 @@ public class PushbotTeleopTank_Mecanum extends OpMode{
             telemetry.addData("Status", "***** TOP GLYPH CONTROL *****");
         }
 
+
+
+
         // using JOYSTICK TRIGGERS for bottom glyph
         if (gamepad2.right_trigger > 0.5 || gamepad2.left_trigger > 0.5) {
 
             telemetry.addData("Status", "BOTTOM Glyph Servo ");
 
             if (gamepad2.left_trigger > 0.5) { //left_stick_y * 100 >= threshold)
+                bottomRightGlyphHolder.setPosition(GLYPH_BOTTOM_RIGHT_SERVO_CLOSE);
+                bottomLeftGlyphHolder.setPosition(GLYPH_BOTTOM_LEFT_SERVO_CLOSE);
+            }
+            else { //right_trigger
+                bottomRightGlyphHolder.setPosition(GLYPH_BOTTOM_RIGHT_SERVO_OPEN);
+                bottomLeftGlyphHolder.setPosition(GLYPH_BOTTOM_LEFT_SERVO_OPEN);
+            }
+
+
+            telemetry.addData("Status", "***** BOTTOM GLYPH CONTROL *****");
+        }
+
+
+        if (gamepad1.right_trigger > 0.5 || gamepad1.left_trigger > 0.5) {
+
+            telemetry.addData("Status", "BOTTOM Glyph Servo ");
+
+            if (gamepad1.left_trigger > 0.5) { //left_stick_y * 100 >= threshold)
                 bottomRightGlyphHolder.setPosition(GLYPH_BOTTOM_RIGHT_SERVO_CLOSE);
                 bottomLeftGlyphHolder.setPosition(GLYPH_BOTTOM_LEFT_SERVO_CLOSE);
             }
@@ -353,11 +374,15 @@ public class PushbotTeleopTank_Mecanum extends OpMode{
 
         // servo control
         if (gamepad2.dpad_up) {
-            relicGrabber_base.setPosition(21.0/256);    // standing position   // 31 - back flat
+            //old value = 21
+            if (relicGrabber_base.getPosition()<(20.0/256.0)){
+                relicGrabber_base.setPosition(relicGrabber_base.getPosition()+0.005);
+            }
+            //relicGrabber_base.setPosition(21.0/256);    // standing position   // 31 - back flat
             telemetry.addData("Status", "***** relicGrabber_base up *****");
         }
         if (gamepad2.dpad_down) {
-            relicGrabber_base.setPosition(10.0/256);        // grab position
+            relicGrabber_base.setPosition(7.0/256.0);        // grab position
             telemetry.addData("Status", "***** relicGrabber_base down *****");
         }
         if (gamepad2.dpad_left) {   // close claw
