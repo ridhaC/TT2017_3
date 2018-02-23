@@ -18,7 +18,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
 
 @Autonomous(group = "TechieTitans")
 //@Disabled
-public class TTBlueAutoB extends HardwareClass_V2{
+public class BLUERidha extends HardwareClass_V2{
 
     int currentState = 0;
     int previousState = 7;
@@ -44,7 +44,7 @@ public class TTBlueAutoB extends HardwareClass_V2{
     double allianceSpecific;
     int allianceSpecificDistance;
     boolean shortVersion = false;
-    boolean jewelEnabled = false;
+    boolean jewelEnabled = true;
     int moveDistance = 0;
     int offPlate = 680;
 
@@ -71,7 +71,7 @@ public class TTBlueAutoB extends HardwareClass_V2{
      * Construct the class.
      * The system calls this member when the class is instantiated.
      */
-    public TTBlueAutoB() {
+    public BLUERidha() {
         // Initialize base classes.
         // All via self-construction.
 
@@ -99,6 +99,8 @@ public class TTBlueAutoB extends HardwareClass_V2{
         top_right_hand.setPosition(0.5);
         top_left_hand.setPosition(0.0);
         jewel_pusher_arm.setPosition(JEWEL_PUSHER_ARM_REST);
+        relicGrabber_base.setPosition(33.0/255.0);
+        relicGrabber_claw.setPosition(0.0/255.0);
         
         // Calibrate the gyro.
         gyro.calibrate();
@@ -232,8 +234,8 @@ public class TTBlueAutoB extends HardwareClass_V2{
             case 3:
                 // Lower the Jewel Arm Servo - AND -
                 // Bring out Jewel servo from resting position
-                jewel_pusher.setPosition(150.0/256);
-                jewel_pusher_arm.setPosition(12.0 / 256);
+                jewel_pusher.setPosition(125.0/256);
+                jewel_pusher_arm.setPosition(JEWEL_PUSHER_ARM_ENGAGE);
                 if (runtime.milliseconds() > 3000) {
                     currentState++;
                         runtime.reset();
@@ -351,7 +353,7 @@ public class TTBlueAutoB extends HardwareClass_V2{
                 // Column 0 - it will come here from DEFAULT case
                 else {
 
-                    if (gyroPointTurnV2(.2, Sides.LEFT, 11,3000)) {
+                    if (gyroPointTurnV2(.2, Sides.LEFT, 10,3000)) {
                         runtime.reset();
                         currentState++;
                     }
@@ -438,7 +440,7 @@ public class TTBlueAutoB extends HardwareClass_V2{
             case 18:
                 // Come back
                 //left count right count was 200
-                if (driveWithEncodersV2(-0.3, -0.3, 100, 100,2000)) {
+                if (driveWithEncodersV2(-0.3, -0.3, 50, 50,2000)) {
                     stopMotors();
                     currentState++;
                     runtime.reset();
