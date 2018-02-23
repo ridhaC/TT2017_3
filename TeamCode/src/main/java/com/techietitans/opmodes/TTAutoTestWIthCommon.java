@@ -17,12 +17,12 @@ import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
 //---VueForia-Specific-Imports---
 
 @Autonomous(group = "TechieTitans")
-@Disabled
+//@Disabled
 
 public class TTAutoTestWIthCommon extends TTAutoCommon{
 
     int currentState = 0;
-    int previousState = 7;
+    int previousState = 0;
     //boolean isRunning = false;
     //boolean isResetRunning = false;
     DataLogger dl;
@@ -86,6 +86,7 @@ public class TTAutoTestWIthCommon extends TTAutoCommon{
 //            dl.addField("LoopCounter");
 //            dl.newLine();
         }
+        super.loop();
     }
 
     //*****************************************************************************
@@ -99,24 +100,18 @@ public class TTAutoTestWIthCommon extends TTAutoCommon{
 
             case 0:
                 //First state
-                super.loop();
-                if (CommoncurrentState>7) {
+
+                if (CommoncurrentState>6) {
                     currentState++;
                 }
-                break;
-            case 1:
+                else {
+                    super.loop();
+                }
+
                 break;
 
             //************END of Jewel Push
-            case 7:
-                // Undo the turn
-                //if (driveWithEncoders(.15, .15, 2050, 2050)) {
-                    currentState++;
-                //}
-                break;
-
-
-            case 8:
+            case 1:
                 // Come down and move towards glyph drop zone
                 //TODO: Adjust alliance specific parameters
 
@@ -136,27 +131,27 @@ public class TTAutoTestWIthCommon extends TTAutoCommon{
                     moveDistance = 260;
                 }
 
-                if (driveWithEncoders(allianceSpecific, allianceSpecific, offPlate, offPlate)) {
+                if (driveWithEncodersV2(allianceSpecific, allianceSpecific, offPlate, offPlate,5000)) {
                     //if (runtime.milliseconds() > 7000) {
-                        currentState++;
-                        runtime.reset();
+                    currentState++;
+                    runtime.reset();
                     //}
                 }
                 break;
 
 
-            case 9:
+            case 2:
                 if (runtime.milliseconds() > 1000) {
-                currentState++;
-                runtime.reset();
+                    currentState++;
+                    runtime.reset();
                 }
                 break;
 
 
-            case 10:
+            case 3:
                 if (collumn == 2)   {
 
-                    if (gyroPointTurn(.15, Sides.LEFT, 180 - 57)) {
+                    if (gyroPointTurnV2(.15, Sides.LEFT, 180 - 57,5000)) {
                         runtime.reset();
                         currentState++;
                     }
@@ -164,7 +159,7 @@ public class TTAutoTestWIthCommon extends TTAutoCommon{
 
                 else if (collumn == 1)  {
 
-                    if (gyroPointTurnV2(.25, Sides.LEFT, 180 - 35,5000)) {
+                    if (gyroPointTurnV2(.25, Sides.LEFT, 180 - 50,5000)) {
                         runtime.reset();
                         currentState++;
                     }
@@ -175,7 +170,7 @@ public class TTAutoTestWIthCommon extends TTAutoCommon{
                 // Column 0 - it will come here from DEFAULT case
                 else {
 
-                    if (gyroPointTurn(.2, Sides.RIGHT, 180 + 9)) {
+                    if (gyroPointTurnV2(.25, Sides.LEFT, 180 - 25,5000)) {
                         runtime.reset();
                         currentState++;
                     }
@@ -185,39 +180,39 @@ public class TTAutoTestWIthCommon extends TTAutoCommon{
 
                 break;
 
-            case 11:
+            case 4:
                 // Move front to the drop zone -First move
                 telemetry.addData("**** RUN TIME ****  ", runtime.milliseconds());
 
-                if ((driveWithEncoders(0.15, 0.15, moveDistance, moveDistance))|| (runtime.milliseconds()>3000)) {
+                if ((driveWithEncodersV2(0.15, 0.15, moveDistance, moveDistance,1000))) {
                     runtime.reset();
                     if (collumn>1) //Need an additional step..so separate
-                    currentState++;
-                    else currentState += 2;
+                        currentState++;
+                    else currentState =7;
                 }
 
                 break;
             //** Only for Column 3 - Start
-                case 12:
-                    // Undo angle
-                    if (gyroPointTurn(.2, Sides.LEFT, 23)) {
-                        currentState++;
-                        runtime.reset();
-                    }
-                    break;
+            case 5:
+                // Undo angle
+                if (gyroPointTurnV2(.2, Sides.LEFT, 23,3000)) {
+                    currentState++;
+                    runtime.reset();
+                }
+                break;
 
-                case 13:
-                    // Move front to the drop zone - 2nd move
-                    //left count right count was 150
-                    if ((driveWithEncoders(0.1, 0.1, 60, 60))|| (runtime.milliseconds()>3000)) {
-                        stopMotors();
-                        runtime.reset();
-                        currentState++;
-                    }
+            case 6:
+                // Move front to the drop zone - 2nd move
+                //left count right count was 150
+                if ((driveWithEncodersV2(0.1, 0.1, 60, 60,2000))) {
+                    stopMotors();
+                    runtime.reset();
+                    currentState++;
+                }
 
-                    break;
+                break;
             //** Only for Column 3 - End
-            case 14:
+            case 7:
                 // Lower glyph -- Not sure if we need it
                 // Lift the glyph to mid height
                 lift_motor.setPower(-0.3);
@@ -231,7 +226,7 @@ public class TTAutoTestWIthCommon extends TTAutoCommon{
                 break;
 
 
-            case 15:
+            case 8:
                 // Release glyph
                 bottom_right_hand.setPosition(GLYPH_BOTTOM_RIGHT_SERVO_OPEN);
                 bottom_left_hand.setPosition(GLYPH_BOTTOM_LEFT_SERVO_OPEN);
@@ -240,10 +235,10 @@ public class TTAutoTestWIthCommon extends TTAutoCommon{
                 break;
 
 
-            case 16:
+            case 9:
                 // come back
                 //left count right count was 100
-                if (driveWithEncoders(-0.3, -0.3, 100, 100)|| (runtime.milliseconds()>3000)) {
+                if (driveWithEncodersV2(-0.3, -0.3, 100, 100,2000)) {
                     stopMotors();
                     currentState++;
                     runtime.reset();
@@ -251,20 +246,20 @@ public class TTAutoTestWIthCommon extends TTAutoCommon{
 
                 break;
 
-            case 17:
+            case 10:
                 // push
                 //left count right count was 300
-                if (driveWithEncoders(0.3, 0.3, 110, 110)|| (runtime.milliseconds()>3000)) {
+                if (driveWithEncodersV2(0.3, 0.3, 110, 110,2000)) {
                     stopMotors();
                     currentState++;
                     runtime.reset();
                 }
                 break;
 
-            case 18:
+            case 11:
                 // come back ...final step
                 //left count right count was 100
-                if (driveWithEncoders(-0.3, -0.3, 100, 100)|| (runtime.milliseconds()>3000)) {
+                if (driveWithEncodersV2(-0.3, -0.3, 100, 100,2000)) {
                     stopMotors();
                     currentState++;
                     runtime.reset();

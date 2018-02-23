@@ -16,7 +16,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.RelicRecoveryVuMark;
 
 @Autonomous(group = "TechieTitans")
 //@Disabled
-public class TTBlueAutoA extends HardwareClass_V2{
+public class AaryanBLUE extends HardwareClass_V2{
 
     int currentState = 0;
     int previousState = 7;
@@ -24,7 +24,7 @@ public class TTBlueAutoA extends HardwareClass_V2{
     boolean isResetRunning = false;
     DataLogger dl;
     private ElapsedTime runtime = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
-    Colors allianceColor;
+    Colors allianceColor= Colors.BLUE;
     Colors jewelColor;
     int leftStartPosition;
     int rightStartPosition;
@@ -66,7 +66,7 @@ public class TTBlueAutoA extends HardwareClass_V2{
      * Construct the class.
      * The system calls this member when the class is instantiated.
      */
-    public TTBlueAutoA() {
+    public AaryanBLUE() {
         // Initialize base classes.
         // All via self-construction.
 
@@ -94,6 +94,8 @@ public class TTBlueAutoA extends HardwareClass_V2{
         top_right_hand.setPosition(0.5);
         top_left_hand.setPosition(0.0);
         jewel_pusher_arm.setPosition(JEWEL_PUSHER_ARM_REST);
+        relicGrabber_base.setPosition(33.0/255.0);
+        relicGrabber_claw.setPosition(0.0/255.0);
         
         // Calibrate the gyro.
         gyro.calibrate();
@@ -160,26 +162,6 @@ public class TTBlueAutoA extends HardwareClass_V2{
             //Set a new data logger and header of the file
 //            dl = new DataLogger("Dl_TT_Auto_V4");
 //            dl.addField("LoopCounter");
-//            dl.addField("State");
-//            dl.addField("Left Motor Position");
-//            dl.addField("Left Motor Power");
-//            dl.addField("Right Motor Position");
-//            dl.addField("Right Motor Power");
-//            dl.addField("Gyro");
-//            dl.addField("ODS");
-//            dl.addField("Left_Color");
-//            dl.addField("Left_R");
-//            dl.addField("Left_B");
-//            dl.addField("Left_G");
-//            dl.addField("Right_Color");
-//            dl.addField("Right_R");
-//            dl.addField("Right_B");
-//            dl.addField("Right_G");
-//            dl.addField("Left_Pusher");
-//            dl.addField("Right_Pusher");
-//            dl.addField("Bottom_Color");
-//            dl.addField("Bottom_R");
-//            dl.addField("Bottom_B");
 //            dl.addField("Bottom_G");
 //            dl.newLine();
         }
@@ -224,8 +206,8 @@ public class TTBlueAutoA extends HardwareClass_V2{
             case 3:
                 // Lower the Jewel Arm Servo - AND -
                 // Bring out Jewel servo from resting position
-                jewel_pusher.setPosition(118.0/256);
-                jewel_pusher_arm.setPosition(12.0 / 256);
+                jewel_pusher.setPosition(125.0/256);
+                jewel_pusher_arm.setPosition(JEWEL_PUSHER_ARM_ENGAGE);
                 if (runtime.milliseconds() > 3000) {
                     currentState++;
                         runtime.reset();
@@ -250,10 +232,10 @@ public class TTBlueAutoA extends HardwareClass_V2{
                 //if color sensor and alliance color is same the move right, else left
                 // (when color sensor is pointed at right side of the arm)
                 if (jewelColor == allianceColor){
-                    jewel_pusher.setPosition(30.0/256);
+                    jewel_pusher.setPosition(60.0/256);
                 }
                 else{
-                    jewel_pusher.setPosition(240.0/256);
+                    jewel_pusher.setPosition(200.0/256);
                 }
 
                 if (runtime.milliseconds() > 2000) {
@@ -282,24 +264,24 @@ public class TTBlueAutoA extends HardwareClass_V2{
 
                 allianceSpecificDistance = (allianceColor == Colors.RED) ? 1000 : 1000;
 
-                if (collumn ==0) {
+                if (collumn ==0) { //LEFT
                     allianceSpecificDistance = allianceSpecificDistance+480;
-                }else if (collumn ==1 ) {
+                }else if (collumn ==1 ) {  //CENTER
                     allianceSpecificDistance = allianceSpecificDistance+637;
                 }else {
                     allianceSpecificDistance = allianceSpecificDistance+505;
                 }
 
-                if (driveWithEncoders(allianceSpecific, allianceSpecific, allianceSpecificDistance, allianceSpecificDistance)) {
+                if (driveWithEncodersV2(allianceSpecific, allianceSpecific, allianceSpecificDistance, allianceSpecificDistance,5000)) {
                     currentState++;
                 }
                 break;
             case 8:
                 int angle = 0;
 
-                if (collumn ==0 ) {
+                if (collumn ==0 ) { //LEFT
                     angle = 105;
-                }else if (collumn ==1 ) {
+                }else if (collumn ==1 ) { //CENTER
                     angle = 95;
                 }else {
                     angle = 60;
@@ -336,7 +318,7 @@ public class TTBlueAutoA extends HardwareClass_V2{
             case 11:
                 // moving back to allow time for lift motor to go down/glyph release
 
-                if ((driveWithEncoders(-0.1, -0.1, 100, 100)) || (runtime.milliseconds() > 5000)) {
+                if ((driveWithEncodersV2(-0.1, -0.1, 100, 100,5000)) || (runtime.milliseconds() > 5000)) {
                     currentState++;
                     runtime.reset();
                 }
@@ -347,18 +329,18 @@ public class TTBlueAutoA extends HardwareClass_V2{
             case 12:
                 // Move to the drop zone
 
-                if(collumn == 0){
-                    if ((driveWithEncoders(0.1, 0.1, 425, 425)) || (runtime.milliseconds() > 5000)) {
+                if(collumn == 0){ //LEFT
+                    if ((driveWithEncodersV2(0.1, 0.1, 425, 425,5000)) || (runtime.milliseconds() > 5000)) {
                         currentState++;
                         runtime.reset();
                     }
-                }else if(collumn ==1 ){
-                    if ((driveWithEncoders(0.1, 0.1, 330, 330)) || (runtime.milliseconds() > 5000)) {
+                }else if(collumn ==1 ){ //CENTER
+                    if ((driveWithEncodersV2(0.1, 0.1, 330, 330,5000)) || (runtime.milliseconds() > 5000)) {
                         currentState++;
                         runtime.reset();
                     }
                 }else{
-                    if ((driveWithEncoders(0.1, 0.1, 310, 310)) || (runtime.milliseconds() > 5000)) {
+                    if ((driveWithEncodersV2(0.1, 0.1, 310, 310,5000)) || (runtime.milliseconds() > 5000)) {
                         currentState++;
                         runtime.reset();
                     }
@@ -367,16 +349,16 @@ public class TTBlueAutoA extends HardwareClass_V2{
                 break;
             case 13:
                 telemetry.addData("**CASE 14**", "");
-                if (collumn == 0) {
-                    if (driveWithEncoders(-.1, -.1, 750, 750)) {
+                if (collumn == 0) { //LEFT
+                    if (driveWithEncodersV2(-.1, -.1, 750, 750,5000)) {
                         currentState++;
                     }
-                } else if (collumn == 1) {
-                    if (driveWithEncoders(-.1, -.1, 700, 700)) {
+                } else if (collumn == 1) { //CENTER
+                    if (driveWithEncodersV2(-.1, -.1, 700, 700,5000)) {
                         currentState++;
                     }
                 } else if (collumn == 2) {
-                    if (driveWithEncoders(-.1, -.1, 700, 700)) {
+                    if (driveWithEncodersV2(-.1, -.1, 700, 700,5000)) {
                         currentState++;
                     }
                 } else {
@@ -387,16 +369,16 @@ public class TTBlueAutoA extends HardwareClass_V2{
             case 14:
                 // Come back a bit
 
-                if(collumn == 0){
-                    if (driveWithEncoders(0.1, 0.1, 500, 500)) {
+                if(collumn == 0){ //LEFT
+                    if (driveWithEncodersV2(0.1, 0.1, 500, 500,5000)) {
                         currentState++;
                     }
-                }else if(collumn == 1){
-                    if (driveWithEncoders(0.1, 0.1, 400, 400)) {
+                }else if(collumn == 1){ //CENTER
+                    if (driveWithEncodersV2(0.1, 0.1, 400, 400,5000)) {
                         currentState++;
                     }
                 }else{
-                    if (driveWithEncoders(0.1, 0.1, 400, 400)) {
+                    if (driveWithEncodersV2(0.1, 0.1, 400, 400,5000)) {
                         currentState++;
                     }
                 }
@@ -480,40 +462,42 @@ public class TTBlueAutoA extends HardwareClass_V2{
     //Drives all 4 wheel to a desired encoder count
     // it works on relative position. so, we don't need to reset encoder
     //
-   boolean driveWithEncoders
-   (double left_power
-           , double right_power
-           , double left_count
-           , double right_count
-   )
+    boolean driveWithEncodersV2
+    (double left_power
+            , double right_power
+            , double left_count
+            , double right_count
+            , int timeout
+    )
 
-   {
-       if (!isRunning) {
-           //This block should only execute once
-           //Set starting position
-           leftStartPosition = left_front_motor.getCurrentPosition();
-           rightStartPosition = right_front_motor.getCurrentPosition();
-           //Set motor speed
-           left_front_motor.setPower(left_power);
-           right_front_motor.setPower(right_power);
-           left_back_motor.setPower(left_power);
-           right_back_motor.setPower(right_power);
-           isRunning = true;
-       }
+    {
+        if (!isRunning) {
+            //This block should only execute once
+            //Set starting position
+            leftStartPosition = left_front_motor.getCurrentPosition();
+            rightStartPosition = right_front_motor.getCurrentPosition();
+            //Set motor speed
+            left_front_motor.setPower(left_power);
+            right_front_motor.setPower(right_power);
+            left_back_motor.setPower(left_power);
+            right_back_motor.setPower(right_power);
+            isRunning = true;
+        }
 
-       //ToDo: add proportional slow down
+        //ToDo: add proportional slow down
 
-       //Done - if the target is reached
-       if (leftEncoder_reached(left_count) || rightEncoder_reached(right_count)) {
-           left_front_motor.setPower(0);
-           right_front_motor.setPower(0);
-           left_back_motor.setPower(0);
-           right_back_motor.setPower(0);
-           isRunning = false;
-           return true;
-       }
-       return false;
-   }
+        //Done - if the target is reached
+        if (leftEncoder_reached(left_count) || rightEncoder_reached(right_count) || (runtime.milliseconds()>timeout)) {
+            left_front_motor.setPower(0);
+            right_front_motor.setPower(0);
+            left_back_motor.setPower(0);
+            right_back_motor.setPower(0);
+            isRunning = false;
+            return true;
+        }
+        return false;
+    }
+
 
     boolean strafeWithEncoders
             (double left_power

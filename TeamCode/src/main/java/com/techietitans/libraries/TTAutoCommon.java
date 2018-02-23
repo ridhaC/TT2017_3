@@ -93,6 +93,8 @@ public class TTAutoCommon extends HardwareClass_V2{
         top_right_hand.setPosition(0.5);
         top_left_hand.setPosition(0.0);
         jewel_pusher_arm.setPosition(JEWEL_PUSHER_ARM_REST);
+        relicGrabber_base.setPosition(33.0/255.0);
+        relicGrabber_claw.setPosition(0.0/255.0);
         
         // Calibrate the gyro.
         gyro.calibrate();

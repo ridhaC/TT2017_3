@@ -55,12 +55,13 @@ public abstract class HardwareClass_V2 extends OpMode {
     public static final double GLYPH_TOP_RIGHT_SERVO_INIT = 10.0/256.0;
 
 
-    public static final double GLYPH_ROTATOR_POSITION_A = 15/256.0;
-    public static final double GLYPH_ROTATOR_POSITION_B = 35/256.0;
+    public static final double GLYPH_ROTATOR_POSITION_A = 39/256.0;
+    public static final double GLYPH_ROTATOR_POSITION_B = 18/256.0;
 
 
     public static final double JEWEL_PUSHER_REST = 256/256.0;    //******
-    public static final double JEWEL_PUSHER_ARM_REST= 1/256.0;
+    public static final double JEWEL_PUSHER_ARM_REST= 5/256.0;
+    public static final double JEWEL_PUSHER_ARM_ENGAGE= 18/256.0;
 
     //******
 
@@ -95,8 +96,8 @@ public abstract class HardwareClass_V2 extends OpMode {
         jewel_pusher_arm = hardwareMap.servo.get("jewel_pusher_arm");
 
 
-        //relicGrabber_claw = hardwareMap.servo.get("relicGrabber_claw");
-       // relicGrabber_base = hardwareMap.servo.get("relicGrabber_base");
+        relicGrabber_claw = hardwareMap.servo.get("relicGrabber_claw");
+        relicGrabber_base = hardwareMap.servo.get("relicGrabber_base");
 
         left_front_motor.setDirection(DcMotor.Direction.REVERSE);
         left_back_motor.setDirection(DcMotor.Direction.REVERSE);
