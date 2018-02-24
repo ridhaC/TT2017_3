@@ -300,6 +300,19 @@ public class PushbotTeleopTank_Mecanum extends OpMode{
             telemetry.addData("Status", "***** GLYPH ROTATOR - POSITION B *****");
         }
 
+
+        if (gamepad1.x) { // if (gamepad2.a && !positionA) {
+            glyphHolderRotator.setPosition(GLYPH_ROTATOR_POSITION_A);
+            positionA = !positionA;
+            telemetry.addData("Status", "***** GLYPH ROTATOR - POSITION A *****");
+        }
+        else if (gamepad1.y) { //if (gamepad2.b && positionA) {
+            glyphHolderRotator.setPosition(GLYPH_ROTATOR_POSITION_B);
+            positionA = !positionA;
+            telemetry.addData("Status", "***** GLYPH ROTATOR - POSITION B *****");
+        }
+
+
         // using JOYSTICK BUMPERS for top glyph
         if (gamepad2.left_bumper || gamepad2.right_bumper) {
 
