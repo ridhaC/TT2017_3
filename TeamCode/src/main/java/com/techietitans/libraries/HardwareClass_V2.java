@@ -46,16 +46,21 @@ public abstract class HardwareClass_V2 extends OpMode {
 
     //Init Parameters
 
-    public static final double GLYPH_BOTTOM_RIGHT_SERVO_OPEN       =  0.20 ;
+    public static final double GLYPH_BOTTOM_RIGHT_SERVO_OPEN       =  0.15 ;
     public static final double GLYPH_BOTTOM_RIGHT_SERVO_CLOSE      =  0.60 ;
-    public static final double GLYPH_BOTTOM_LEFT_SERVO_OPEN       =  0.55 ;
+    public static final double GLYPH_BOTTOM_LEFT_SERVO_OPEN       =  0.65 ;
     public static final double GLYPH_BOTTOM_LEFT_SERVO_CLOSE      =  0.15 ;
+
+    public static final double GLYPH_TOP_RIGHT_SERVO_OPEN       =  170.0/256.0 ;  // was 0.25
+    public static final double GLYPH_TOP_RIGHT_SERVO_CLOSE      =  30.0/255.0 ;  // was 0.6
+    public static final double GLYPH_TOP_LEFT_SERVO_OPEN       =  60.0/256.0 ;   // was 0.7 // opposite values than Right Servo
+    public static final double GLYPH_TOP_LEFT_SERVO_CLOSE      =   220.0/255.0;  // was 0.375
 
     public static final double GLYPH_TOP_LEFT_SERVO_INIT = 185.0/256.0;
     public static final double GLYPH_TOP_RIGHT_SERVO_INIT = 10.0/256.0;
 
 
-    public static final double GLYPH_ROTATOR_POSITION_A = 39/256.0;
+    public static final double GLYPH_ROTATOR_POSITION_A = 38/256.0;
     public static final double GLYPH_ROTATOR_POSITION_B = 18/256.0;
 
 

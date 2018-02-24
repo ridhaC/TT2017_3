@@ -91,11 +91,11 @@ public class REDRidha extends HardwareClass_V2{
         
         //init Servos
         bottom_right_hand.setPosition(GLYPH_BOTTOM_RIGHT_SERVO_OPEN); 
-        bottom_left_hand.setPosition(GLYPH_BOTTOM_LEFT_SERVO_OPEN); 
+        bottom_left_hand.setPosition(GLYPH_BOTTOM_LEFT_SERVO_OPEN);
+        top_right_hand.setPosition(GLYPH_TOP_RIGHT_SERVO_OPEN);
+        top_left_hand.setPosition(GLYPH_TOP_LEFT_SERVO_OPEN);
         glyph_rotator.setPosition(GLYPH_ROTATOR_POSITION_A);
         jewel_pusher.setPosition(JEWEL_PUSHER_REST);
-        top_right_hand.setPosition(0.5);
-        top_left_hand.setPosition(0.0);
         jewel_pusher_arm.setPosition(JEWEL_PUSHER_ARM_REST);
         relicGrabber_base.setPosition(33.0/255.0);
         relicGrabber_claw.setPosition(0.0/255.0);
@@ -192,13 +192,16 @@ public class REDRidha extends HardwareClass_V2{
                 //First state
                 currentState++;
                 gyro.resetZAxisIntegrator();
+                bottom_right_hand.setPosition(GLYPH_BOTTOM_RIGHT_SERVO_CLOSE-0.1);
+                bottom_left_hand.setPosition(GLYPH_BOTTOM_LEFT_SERVO_CLOSE+0.1);
                 runtime.reset();
                 break;
             case 1:
                 // Grab the glyph
-                bottom_right_hand.setPosition(GLYPH_BOTTOM_RIGHT_SERVO_CLOSE);
-                bottom_left_hand.setPosition(GLYPH_BOTTOM_LEFT_SERVO_CLOSE);
+
                 if (runtime.milliseconds()>1500) {
+                    bottom_right_hand.setPosition(GLYPH_BOTTOM_RIGHT_SERVO_CLOSE);
+                    bottom_left_hand.setPosition(GLYPH_BOTTOM_LEFT_SERVO_CLOSE);
                     runtime.reset();
                     currentState++;
                 }

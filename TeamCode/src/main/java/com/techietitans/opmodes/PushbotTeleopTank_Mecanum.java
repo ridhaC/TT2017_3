@@ -114,16 +114,16 @@ public class PushbotTeleopTank_Mecanum extends OpMode{
     public Servo relicGrabber_claw   = null;
     public Servo relicGrabber_base   = null;
 
-    public static final double GLYPH_TOP_RIGHT_SERVO_OPEN       =  130/256.0 ;  // was 0.25
-    public static final double GLYPH_TOP_RIGHT_SERVO_CLOSE      =  35.0/255.0 ;  // was 0.6
-    public static final double GLYPH_TOP_LEFT_SERVO_OPEN       =  70.0/256.0 ;   // was 0.7 // opposite values than Right Servo
-    public static final double GLYPH_TOP_LEFT_SERVO_CLOSE      =   150.0/255.0;  // was 0.375
-    public static final double GLYPH_BOTTOM_RIGHT_SERVO_OPEN       =  50/256.0 ;
-    public static final double GLYPH_BOTTOM_RIGHT_SERVO_CLOSE      =  137/256.0 ;
-    public static final double GLYPH_BOTTOM_LEFT_SERVO_OPEN       =  137/256.0 ; // 0.59   // opposite values than Right Servo
-    public static final double GLYPH_BOTTOM_LEFT_SERVO_CLOSE      =  50/256.0 ; // 0.275
-    public static final double GLYPH_ROTATOR_POSITION_A = 39/256.0;
-    public static final double GLYPH_ROTATOR_POSITION_B = 18/256.0;
+    public static final double GLYPH_TOP_RIGHT_SERVO_OPEN       =  170.0/256.0 ;  // was 0.25
+    public static final double GLYPH_TOP_RIGHT_SERVO_CLOSE      =  30.0/255.0 ;  // was 0.6
+    public static final double GLYPH_TOP_LEFT_SERVO_OPEN       =  60.0/256.0 ;   // was 0.7 // opposite values than Right Servo
+    public static final double GLYPH_TOP_LEFT_SERVO_CLOSE      =   220.0/255.0;  // was 0.375
+    public static final double GLYPH_BOTTOM_RIGHT_SERVO_OPEN       =  50.0/256.0 ;
+    public static final double GLYPH_BOTTOM_RIGHT_SERVO_CLOSE      =  137.0/256.0 ;
+    public static final double GLYPH_BOTTOM_LEFT_SERVO_OPEN       =  137.0/256.0 ; // 0.59   // opposite values than Right Servo
+    public static final double GLYPH_BOTTOM_LEFT_SERVO_CLOSE      =  50.0/256.0 ; // 0.275
+    public static final double GLYPH_ROTATOR_POSITION_A = 38.0/256.0;
+    public static final double GLYPH_ROTATOR_POSITION_B = 17.0/256.0;
 
     private boolean lowSpeed = false;
     private boolean positionA = true;
